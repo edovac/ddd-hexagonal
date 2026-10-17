@@ -64,6 +64,15 @@ Verified with ArchUnit 1.4.1 and JUnit 5.11 on JDK 21 (Maven, in Docker): a plan
 - Test tagging: a comment `// @rule AL-06` or `@Tag("AL-06")` on each test, plus `@usecase` for use cases.
 - Domain errors carry an English `code`; messages come from resource bundles.
 
+## Logging
+
+Only when the project adopted a logging policy (`references/logging.md`). Starting points, to check against current documentation.
+
+- Facade: SLF4J (has `trace`), Logback with a JSON encoder behind it; one `Logger` per class in application and adapter code.
+- Correlation ID: SLF4J `MDC`, set by the driving adapter (servlet filter or interceptor) and cleared at the end of the request; the encoder writes MDC fields on every entry.
+- Masking: personal-data value objects override `toString()` to return the masked form (a Java `record` or Kotlin `data class` prints every field by default, so override it).
+- Architecture check: an ArchUnit rule `noClasses().that().resideInAPackage("..domain..").should().dependOnClassesThat().resideInAPackage("org.slf4j..")`.
+
 ## Integration tests
 
 Testcontainers with the production database engine and version, schema from the migration tool (Flyway or Liquibase), each test in a rolled-back transaction or against a clean schema. No H2 or other embedded substitute for the production engine.

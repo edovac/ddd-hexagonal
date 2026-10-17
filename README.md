@@ -43,7 +43,7 @@ The branch guard hook is not enabled by the plugin. The skill installs it into e
 | `.claude-plugin/` | Plugin manifest and single-plugin marketplace |
 | `commands/` | One command per mode; each starts the skill in that mode |
 | `skills/ddd-hexagonal/SKILL.md` | Workflow, modes and non-negotiable practices |
-| `skills/ddd-hexagonal/references/` | Architecture rules, interview, change procedures, documentation review, code review, one file per language (PHP, TypeScript, Python with uv, Java/Kotlin) |
+| `skills/ddd-hexagonal/references/` | Architecture rules, logging policy, interview, change procedures, documentation review, code review, one file per language (PHP, TypeScript, Python with uv, Java/Kotlin) |
 | `skills/ddd-hexagonal/assets/templates/` | Templates for the document set and `CLAUDE.md` |
 | `skills/ddd-hexagonal/assets/hooks/` | Branch guard hook that blocks `git commit` on `main`/`master`, and the settings snippet that enables it |
 | `skills/ddd-hexagonal/scripts/check_traceability.py` | Checks rule IDs, use cases and test citations |

@@ -29,6 +29,10 @@ Hosting limits, stack, conventions and testing rules are in `technical-spec.md`.
 - Commands: unit `<cmd>` · integration `<cmd>` · static analysis `<cmd>` · architecture `<cmd>` · traceability `python tools/check_traceability.py --docs docs --tests <tests dir>`
 - Before calling a task done: run all of them and report the real result, including failures; give the rule and use-case IDs touched, the test covering each, and any gap or mismatch. If code and spec disagree, ask before changing either.
 
+## Logging
+
+<If adopted:> Logging follows `technical-spec.md` "Logging": one DEBUG on entry and one INFO on completion per adapter call and use case, a correlation ID on every entry, no logging in the domain, never personal data (see `domain-model.md` "Personal data"). <If out of scope: "Logging is out of scope; ask before adding any.">
+
 ## Git and dependencies
 
 - Before changing code, check the current branch. If it is the main branch, propose a new branch name and ask before creating it. Never commit to the main branch.

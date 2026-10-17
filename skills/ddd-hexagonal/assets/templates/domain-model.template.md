@@ -58,11 +58,19 @@ Dependency direction: driving adapters → application → domain ← driven ada
 
 <Named facts; how they map to the audit record.>
 
-## 9. Testing the model
+## 9. Personal data
+
+Fields that identify a person or are sensitive. They never appear in logs (`references/logging.md`), and value objects holding them mask their string form.
+
+| Aggregate or value object | Field | Category (personal, special category, credential, payment) |
+| --- | --- | --- |
+| `<Name>` | `<field>` | <category> |
+
+## 10. Testing the model
 
 Extra expectations from the domain view; test types are in the technical spec.
 
-## 10. How to use this file
+## 11. How to use this file
 
 - Before a feature, find its concept in section 2 and its home in section 3.
 - A new rule is first added to `business-rules.md` with an ID, then goes into an aggregate or domain service with a unit test.

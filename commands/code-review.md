@@ -2,7 +2,7 @@
 description: Review code changes against the DDD + hexagonal rules - architecture, rule-ID traceability, agreement with the documents, tests and dependencies
 argument-hint: "[PR number | branch | path] [--full] [--fix] [low|medium|high|xhigh|max]"
 ---
-Use the ddd-hexagonal skill in **Code review** mode, following `references/code-review.md`.
+Follow the skill at `${CLAUDE_PLUGIN_ROOT}/skills/ddd-hexagonal/SKILL.md` in **Code review** mode. Read its references from `${CLAUDE_PLUGIN_ROOT}/skills/ddd-hexagonal/references/`, not from any other installed copy of the skill. Its steps are in `references/code-review.md`.
 
 If the project has no `docs/business-rules.md`, stop and suggest `/ddd-hexagonal:bootstrap`, or the built-in `/code-review` for a generic review.
 

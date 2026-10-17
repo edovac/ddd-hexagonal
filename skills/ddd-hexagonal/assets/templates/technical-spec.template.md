@@ -49,6 +49,18 @@ Enforces <IDs>. <Algorithm, inputs, outputs, transaction notes.>
 
 <Mechanisms and the table of threats and controls.>
 
+## Logging
+
+<Adopted, adapted or out of scope, as decided at Bootstrap. If adopted: "Follows the skill's logging policy" plus only the differences.>
+
+| Item | Choice |
+| --- | --- |
+| Library and format | <facade, JSON in production> |
+| Destination | <stdout collected by …, file, service> |
+| Level per environment | production INFO · staging DEBUG · local and test TRACE |
+| Retention | <days; applies to all logs, which hold pseudonymous IDs> |
+| Correlation ID header | <`X-Correlation-Id`> |
+
 ## Operations
 
 <Backup, jobs, migrations, deploy.>
@@ -57,6 +69,7 @@ Enforces <IDs>. <Algorithm, inputs, outputs, transaction notes.>
 
 - **Unit:** every business rule in the domain and service layers; no database, no framework.
 - **Integration:** adapters and use cases against the real database engine, schema from migrations, each test rolled back.
+- **Logging (if adopted):** canary test that no personal data reaches the logs, shape test of the DEBUG/INFO entries per use case.
 - **Manual before release:** <list>.
 
 Rules:
