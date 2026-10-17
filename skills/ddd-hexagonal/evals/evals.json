@@ -1,0 +1,118 @@
+{
+  "skill_name": "ddd-hexagonal",
+  "evals": [
+    {
+      "id": 1,
+      "name": "bootstrap-invoicing",
+      "prompt": "I want to start a new project: a small invoicing service for freelancers (create clients, create and send invoices with VAT, mark them paid, monthly summary). Backend in Python. Please get the project set up properly with documents and architecture guidance. I don't want any application code yet.",
+      "expected_output": "A project with the five-document set (functional spec, business rules with IDs and codes, use cases referencing IDs, domain model with glossary and ports, technical spec with Python stack and architecture check) plus CLAUDE.md, open points for unknowns, and no application code.",
+      "files": [],
+      "assertions": [
+        "Business rules are in a table where each rule has an ID like XX-01",
+        "Rules that can fail carry an English error code",
+        "Every use case lists the rule IDs it applies and check_traceability.py reports no undefined IDs",
+        "Functional spec, domain model, technical spec and CLAUDE.md all exist (business rules and use cases may be merged)",
+        "No application source code was written beyond folder placeholders and configuration",
+        "CLAUDE.md contains the branch rule, the ask-before-adding-dependency rule, test-first for domain code, and pointers to the documents",
+        "Technical spec names pytest and an architecture check such as import-linter and a domain/application/adapters layout",
+        "Facts the user did not give (VAT rates, currencies, numbering) are recorded as open points or as questions, not silently invented",
+        "No rule sentence is repeated verbatim in two documents",
+        "Domain model has a ubiquitous language table and a ports table"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "build-book-room",
+      "prompt": "In this project, implement UC-01 Book a room, following the project's documents.",
+      "expected_output": "Domain and application code for UC-01 with unit tests citing BK-01 to BK-04, a BookingRepository port with an in-memory fake, no framework imports in the domain, work not committed on main, and an end-of-task report.",
+      "files": [
+        "fixtures/room-booking"
+      ],
+      "assertions": [
+        "Work is not done on main without a branch: a feature branch exists or a branch name was proposed, and nothing was committed",
+        "Unit tests exist for BK-01, BK-02, BK-03 and BK-04 and each test names its rule with an @rule tag",
+        "Test files were created before the implementation files (file modification times or transcript)",
+        "The unit tests pass when run",
+        "The domain package imports no web framework or database driver",
+        "A BookingRepository port is defined in the application layer and unit tests use an in-memory fake",
+        "A test covers the boundary where one booking ends exactly when another starts",
+        "The final report lists rule IDs touched, the test for each, check results and gaps",
+        "The report states honestly which checks were run and which were not (integration tests, mypy, import-linter)",
+        "No dependency outside the technical spec stack was added without a recorded question",
+        "Documents were not changed without a recorded question"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "review-returns-docs",
+      "prompt": "Our returns desk docs have grown over time and I think they're out of sync. Review them and tell me what's wrong.",
+      "expected_output": "A report that finds the planted problems, groups them as contradictions, gaps and duplication, runs or mirrors the traceability check, and asks the user to decide instead of silently rewriting rules.",
+      "files": [
+        "fixtures/returns-review"
+      ],
+      "assertions": [
+        "Finds the 14-day versus 30-day return window contradiction",
+        "Finds that UC-02 references an undefined rule RT-09",
+        "Finds that RT-06 (audit log) is not referenced by any use case or other document",
+        "Finds that the technical spec restates the text of RT-02 and RT-03",
+        "Finds that the technical route lets Customers decide returns while RT-04 says only staff",
+        "Finds the gift cards contradiction between behaviour and scope",
+        "Notes that only RT-02 has a test",
+        "Used the traceability script or an equivalent check of IDs",
+        "Did not silently change rules: decisions are asked as questions with a recommendation",
+        "Findings are grouped as contradictions, gaps and duplication or stale text"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "change-booking-limits",
+      "prompt": "The requirements changed: a member can now hold at most 2 upcoming bookings (it was 3), and a single booking can last at most 4 hours (it was 8). Please update the requirements and the code.",
+      "expected_output": "Rules BK-01 and BK-04 tightened with the same IDs, no old values left anywhere, tests moved to the new boundaries, a question about existing bookings, and a change report.",
+      "files": [
+        "fixtures/room-booking (after UC-01 is implemented)"
+      ],
+      "assertions": [
+        "Both rules keep their IDs and the old numbers are gone from documents and code",
+        "Tests are moved to the new boundaries with @rule tags and pass",
+        "The limit values live in one place each in the domain or application",
+        "The effect on existing bookings is raised as a question with a recommendation",
+        "Integration tests were run against the real database",
+        "A change report in the skill's format was given"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "change-new-use-case",
+      "prompt": "Members want to see their upcoming bookings. Add that to the project.",
+      "expected_output": "The change kinds are named, new rules with IDs are added, UC-03 is added without renumbering, documents are updated in order, tests come first, and the report follows the skill's format.",
+      "files": [
+        "fixtures/room-booking (after UC-01 is implemented)"
+      ],
+      "assertions": [
+        "The kinds of change (use case, and rules if any) are named before editing",
+        "New behaviour is stated as rules with IDs in the rules file, not only in the use case",
+        "UC-03 is added and existing use case numbers are unchanged",
+        "Domain model, technical spec and functional spec are updated by reference to the rule IDs",
+        "New tests carry @rule or @usecase tags and were written before the code",
+        "No behaviour is invented without being recorded as a question or open point"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "change-db-swap",
+      "prompt": "We want to move the persistence adapter from PostgreSQL to MySQL 8.",
+      "expected_output": "Change confined to the persistence adapter, the new dependency approved, the PostgreSQL-specific overlap guarantee for BK-02 replaced and tested, a Decisions entry written, migrations handled with the user's confirmation, and verified on a real MySQL 8.",
+      "files": [
+        "fixtures/room-booking (after UC-01 is implemented)"
+      ],
+      "assertions": [
+        "Domain and application layers are unchanged",
+        "The new driver is recorded as a question and added to the stack table",
+        "The BK-02 guarantee that relied on a PostgreSQL constraint is replaced and covered by a concurrency test",
+        "A Decisions entry records what, why and what was rejected",
+        "The existing migration is not rewritten without asking whether a real environment applied it",
+        "Tests pass against a real MySQL 8 container"
+      ]
+    }
+  ]
+}

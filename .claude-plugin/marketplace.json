@@ -1,0 +1,16 @@
+{
+  "name": "ev-coding",
+  "owner": {
+    "name": "Edoardo Vaccaro"
+  },
+  "metadata": {
+    "description": "Spec-driven DDD and hexagonal architecture skill for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "ddd-hexagonal",
+      "source": "./",
+      "description": "Spec-driven development with DDD and hexagonal architecture, in any language."
+    }
+  ]
+}

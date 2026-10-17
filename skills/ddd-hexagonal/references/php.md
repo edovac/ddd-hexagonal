@@ -1,0 +1,74 @@
+# PHP
+
+Use PHP 8.x with `declare(strict_types=1)` in every file. Config snippets are starting points; check them against the current documentation of each tool before relying on them.
+
+## Layout
+
+```
+src/
+├── Domain/            entities, value objects, domain services, domain errors (no framework, no PDO)
+├── Application/       one class per use case, DTOs
+│   └── Port/          interfaces owned by the core (repositories, Clock, Mailer ...)
+├── Repository/        PDO adapters implementing the repository ports (or Infrastructure/Persistence)
+├── Controller/        driving adapters: HTTP handlers
+├── Middleware/        driving adapters: session, CSRF, auth
+└── Report/            read side: query classes returning plain rows
+tests/
+├── Unit/              domain and application with in-memory fakes
+└── Integration/       adapters and use cases against the real database
+```
+
+Use a DI container (for example PHP-DI) as the only place that wires layers.
+
+## Tools
+
+| Purpose | Tool |
+| --- | --- |
+| Tests | PHPUnit |
+| Static analysis | PHPStan at level 8 or higher |
+| Style | PHP_CodeSniffer with PSR-12 |
+| Architecture check | Deptrac |
+
+Commands to put in `CLAUDE.md`: `vendor/bin/phpunit --testsuite Unit`, `vendor/bin/phpunit --testsuite Integration`, `vendor/bin/phpstan analyse`, `vendor/bin/phpcs`, `vendor/bin/deptrac analyse`.
+
+## Architecture check (Deptrac)
+
+```yaml
+deptrac:
+  paths: [./src]
+  layers:
+    - name: Domain
+      collectors: [{ type: directory, value: src/Domain/.* }]
+    - name: Application
+      collectors: [{ type: directory, value: src/Application/.* }]
+    - name: Adapters
+      collectors:
+        - { type: directory, value: src/Repository/.* }
+        - { type: directory, value: src/Controller/.* }
+        - { type: directory, value: src/Middleware/.* }
+    - name: Vendor
+      collectors:
+        - { type: classNameRegex, value: '#^(PDO|Slim|Twig|Psr|PHPMailer)#' }
+  ruleset:
+    Domain: ~
+    Application: [Domain]
+    Adapters: [Application, Domain, Vendor]
+```
+
+Domain and Application are not allowed to reach `Vendor`. Extend the regex with each framework or driver in the stack table; avoid backslashes in it, because YAML and Deptrac escape them differently and the check then fails with "Invalid regex pattern". (Verified with Deptrac 2.0: a `use PDO;` in `Domain/` is reported as `DependsOnDisallowedLayer`.) Adapters must not import each other; if a split between driving and driven adapters matters, make them separate layers.
+
+## Conventions
+
+- Hours, money and other exact quantities: value objects over integers (hundredths, cents), never floats.
+- Dates: inject a `Clock` port; do not call `new DateTimeImmutable()` in the domain.
+- Prepared statements only, `PDO::ATTR_EMULATE_PREPARES` off; repositories return domain objects.
+- Test tagging: a docblock line `@rule AL-06` (and `@usecase UC-01`) on each test method or class.
+- Test names read as rules: `test_full_each_allows_allocations_above_entry_total`.
+
+## Integration tests
+
+Run against the same database engine and version as production (Docker locally, a service container in CI). Build the schema from the migration files, wrap each test in a transaction that is rolled back, and load fixtures per test. Do not use SQLite as a stand-in for MySQL or PostgreSQL.
+
+## Shared-hosting note
+
+If production has no shell or Composer, build `vendor/` locally or in CI and upload it, and keep every runtime feature in pure PHP. Record such limits in the technical spec's hosting section, because they decide which libraries are allowed.

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/block_commit_on_main.py 2>/dev/null || python3 .claude/hooks/block_commit_on_main.py",
+            "statusMessage": "Checking branch before commit..."
+          }
+        ]
+      }
+    ]
+  }
+}
