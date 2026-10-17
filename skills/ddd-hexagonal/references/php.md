@@ -65,6 +65,16 @@ Domain and Application are not allowed to reach `Vendor`. Extend the regex with 
 - Test tagging: a docblock line `@rule AL-06` (and `@usecase UC-01`) on each test method or class.
 - Test names read as rules: `test_full_each_allows_allocations_above_entry_total`.
 
+## Logging
+
+Only when the project adopted a logging policy (`references/logging.md`). Starting points, to check against current documentation.
+
+- Facade: PSR-3 `Psr\Log\LoggerInterface` injected into application classes and adapters; Monolog with `JsonFormatter` behind it.
+- TRACE: PSR-3 has nothing below `debug`. Log TRACE entries at `debug` with `'trace' => true` in the context, and filter them out outside local and test.
+- Correlation ID: a Monolog processor adds it to every record; the driving adapter sets it per request.
+- Masking: personal-data value objects implement `__toString()` returning the masked form and keep the raw value behind an explicit getter.
+- Architecture check: add `Psr\Log` and `Monolog` to the collectors the Domain layer must not depend on.
+
 ## Integration tests
 
 Run against the same database engine and version as production (Docker locally, a service container in CI). Build the schema from the migration files, wrap each test in a transaction that is rolled back, and load fixtures per test. Do not use SQLite as a stand-in for MySQL or PostgreSQL.

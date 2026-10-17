@@ -63,6 +63,15 @@ Verified with dependency-cruiser 18 and TypeScript 6: a planted `import fs` in `
 - Test tagging: a comment `// @rule AL-06` (and `// @usecase UC-01`) in each test or `describe` block, or the ID in the test title.
 - Errors: domain errors carry an English `code`; messages come from translation files.
 
+## Logging
+
+Only when the project adopted a logging policy (`references/logging.md`). Starting points, to check against current documentation.
+
+- Facade: pino (JSON by default; has `trace`). Pass a child logger into application classes and adapters.
+- Correlation ID: `AsyncLocalStorage` set by the driving adapter, read by a pino `mixin` so every entry carries it.
+- Masking: personal-data value objects override `toString()` and `toJSON()` to return the masked form. pino's `redact` option is a safety net, not the control.
+- Architecture check: a dependency-cruiser `forbidden` rule from the domain folder to `pino`.
+
 ## Integration tests
 
 Real database through Docker Compose or Testcontainers, schema from the migration files, each test in a rolled-back transaction or a freshly truncated schema. No in-memory database as a stand-in for the production engine.

@@ -80,6 +80,16 @@ Extend `forbidden_modules` with each library of the stack table. Add an `indepen
 - Test tagging: `# @rule AL-06` (and `# @usecase UC-01`) in the test's docstring or on the line above.
 - Domain errors carry an English `code`; messages come from translation files.
 
+## Logging
+
+Only when the project adopted a logging policy (`references/logging.md`). Starting points, to check against current documentation.
+
+- Facade: the standard library `logging` (`logger = logging.getLogger(__name__)`) with a JSON formatter configured once in the composition root; a formatter library is a dependency to approve like any other.
+- TRACE: register a custom level once: `logging.addLevelName(5, "TRACE")`, and log with `logger.log(5, ...)`.
+- Correlation ID: a `contextvars.ContextVar` set by the driving adapter and added to every record by a `logging.Filter`.
+- Masking: personal-data value objects (frozen dataclasses) define `__str__` and `__repr__` returning the masked form, with `field(repr=False)` on the raw value.
+- Architecture check: add `"logging"` (and any logging library) to a `forbidden` contract whose `source_modules` is only the domain. Verified: `import logging` in `domain/` breaks the contract while the application layer may still import it.
+
 ## Integration tests
 
 Real database (Docker Compose or testcontainers), schema from the migration files, a fixture that wraps each test in a rolled-back transaction. No SQLite stand-in for another engine.

@@ -12,6 +12,7 @@ Read this before planning the first use case in a project. The names of folders 
 6. Errors, messages and language
 7. Read side
 8. Anti-patterns
+9. Logging
 
 ## 1. The dependency rule
 
@@ -95,3 +96,8 @@ Queries that only read and hold no rules (reports, lists, exports) may go straig
 - One interface per class "for hexagonal", with a single implementation and no test seam.
 - A cross-aggregate check hidden inside an aggregate, such as "total per day across entries". Put it in the application layer.
 - Mocking the database in integration tests.
+- Logging in the domain, or logging a whole object, request or exception message (it leaks data).
+
+## 9. Logging
+
+Only when the project adopted a logging policy at Bootstrap; the rules are in `references/logging.md`. In short: the domain never logs; each driving adapter call, use case execution and driven port call writes one DEBUG entry on entry and one INFO entry on completion, with a correlation ID; entries hold only allowlisted values, never personal data.

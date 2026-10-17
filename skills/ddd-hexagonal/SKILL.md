@@ -39,6 +39,7 @@ Ask once at Bootstrap and record the answers in the project's `CLAUDE.md`:
 - Before changing code, check the branch. On the main branch, propose a new branch and ask before creating it. Commit only when asked.
 - Tests: unit tests for rules, integration tests against the real database, no coverage percentage, deploy or CI stops on a failing test, static analysis or architecture check.
 - Hexagonal-lite: ports only at real seams (see `references/architecture.md`).
+- Logging: never assume it. Ask the developer explicitly whether to adopt `references/logging.md` (one DEBUG on entry and one INFO on completion per adapter call and use case, no personal data in logs), adapt it, or leave logging out.
 
 ## The document set
 
@@ -70,7 +71,7 @@ A task is one use case from `use-cases.md`. For each:
 2. **Read** the use case, every rule ID it lists, and the matching parts of the domain model and technical spec. If something is missing or contradictory, ask before coding.
 3. **Plan** the files per layer in two or three lines: domain objects, services, application class, ports, adapters, tests. Say where each rule will be enforced.
 4. **Test first** for the domain and service code: write the failing unit test with its `@rule` tags, watch it fail, make it pass.
-5. **Implement** the application class and the ports it needs. Dependencies point inward only (`references/architecture.md`). Business rules never go into controllers, templates, SQL reports or adapters. Build only what the use case and the technical spec call for: a driven adapter (for example the database repository) when the use case must persist, a driving adapter (HTTP route) only when the technical spec lists one for this use case. Do not invent endpoints, authentication placeholders or other behaviour the documents do not define; record each such gap as an open point or a question.
+5. **Implement** the application class and the ports it needs. Dependencies point inward only (`references/architecture.md`). Business rules never go into controllers, templates, SQL reports or adapters. Build only what the use case and the technical spec call for: a driven adapter (for example the database repository) when the use case must persist, a driving adapter (HTTP route) only when the technical spec lists one for this use case. Do not invent endpoints, authentication placeholders or other behaviour the documents do not define; record each such gap as an open point or a question. If the project adopted a logging policy, each new adapter call and use case logs as `references/logging.md` says, and never with personal data.
 6. **Integration tests** for each new adapter and for the use case end to end, against the real database.
 7. **Run** the unit tests, integration tests, static analysis and the architecture check. Report real results, including failures; never mark a task done on a red run. If a check cannot run here, say which and why; a real database can usually be started in Docker.
 8. **Verify against the specs** and write the report below.
