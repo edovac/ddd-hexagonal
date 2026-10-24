@@ -65,6 +65,12 @@ Enforces <IDs>. <Algorithm, inputs, outputs, transaction notes.>
 
 <Backup, jobs, migrations, deploy.>
 
+## Decisions
+
+One entry per decision that changed the stack, a guarantee or a rule's value: what, why, what was rejected, and the evidence for any claim that an alternative cannot work.
+
+- **D-1 <Title>.** <What and why.> Rejected: <alternative and reason>.
+
 ## Testing
 
 - **Unit:** every business rule in the domain and service layers; no database, no framework.
