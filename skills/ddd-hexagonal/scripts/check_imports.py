@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# ///
 """Fallback architecture check for languages without a dependency-rule tool.
 
 Usage:
-    python check_imports.py --dir src/domain --forbid REGEX [--forbid REGEX ...]
+    uv run check_imports.py --dir src/domain --forbid REGEX [--forbid REGEX ...]
                             [--ext .php --ext .go]
 
 Scans every file under --dir for import-style lines (import, from, use, require,
 using, include, #include) that match any --forbid regex. Prints each hit and exits 1
 if there is any. Example, keeping a PHP domain free of frameworks:
 
-    python check_imports.py --dir src/Domain --ext .php --forbid "PDO|Slim\\\\|Twig\\\\"
+    uv run check_imports.py --dir src/Domain --ext .php --forbid "PDO|Slim\\\\|Twig\\\\"
 
 Prefer a real tool where one exists (see the language reference files); this check
 only sees import lines, not fully qualified names used inline.

@@ -26,7 +26,7 @@ Hosting limits, stack, conventions and testing rules are in `technical-spec.md`.
 ## Coding rules
 
 - Test first for domain and service code. Integration tests run against the real database.
-- Commands: unit `<cmd>` · integration `<cmd>` · static analysis `<cmd>` · architecture `<cmd>` · traceability `python tools/check_traceability.py --docs docs --tests <tests dir>`
+- Commands: unit `<cmd>` · integration `<cmd>` · static analysis `<cmd>` · architecture `<cmd>` · traceability `<uv run | python3> tools/check_traceability.py --docs docs --tests <tests dir>`
 - Before calling a task done: run all of them and report the real result, including failures; give the rule and use-case IDs touched, the test covering each, and any gap or mismatch. If code and spec disagree, ask before changing either.
 
 ## Logging

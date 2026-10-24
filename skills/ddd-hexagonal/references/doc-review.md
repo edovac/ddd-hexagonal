@@ -3,10 +3,12 @@
 Run it after every use case (light) and after every milestone (deep). Start with the script, then read.
 
 ```
-python tools/check_traceability.py --docs docs --tests <tests dir>   # or <skill-dir>/scripts/ if the project has no tools/ copy
+uv run tools/check_traceability.py --docs docs --tests <tests dir>   # or the runner in CLAUDE.md; <skill-dir>/scripts/ if the project has no tools/ copy
 ```
 
 It reports: rule IDs used but not defined, rules nobody references, rules cited in no test, use cases that list no rules. Fix or explain every line before reading on.
+
+In the deep review, also compare each script in `tools/` with the one in `<skill-dir>/scripts/` (`diff -q`). If they differ, the project has an older copy or a local edit: show the diff, and ask before replacing it, since a local edit may be deliberate.
 
 ## Light review (after a use case)
 

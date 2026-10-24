@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# ///
 """Check that business rule IDs, use cases and tests agree.
 
 Usage:
-    python check_traceability.py --docs docs [--rules docs/business-rules.md]
+    uv run check_traceability.py --docs docs [--rules docs/business-rules.md]
                                  [--use-cases docs/use-cases.md] [--tests tests]
                                  [--strict]
 
@@ -15,6 +18,7 @@ What it checks
 A rule is defined by a table row that starts with its ID, e.g. "| AL-06 | ... |".
 Prefixes are learned from those rows, so ordinary tokens such as SHA-256 are ignored.
 A range such as "AL-02 to AL-07" or "AL-02…AL-07" counts every ID in it.
+Both ends must carry the prefix: "AL-02 to 07" counts only AL-02.
 A test cites a rule when the ID appears anywhere in a file under --tests.
 Exit code: 0 clean, 1 errors found.
 """
@@ -62,7 +66,8 @@ def expand(text: str, prefixes: set[str]) -> set[str]:
         return ids
     for m in re.finditer(rf"\b({alt})-(\d{{1,3}})\b", text):
         ids.add(f"{m.group(1)}-{m.group(2).zfill(2)}")
-    rng = rf"\b({alt})-(\d{{1,3}})\s*(?:…|\.\.\.|–|-|to)\s*(?:(?:{alt})-)?(\d{{1,3}})\b"
+    # Both ends carry the prefix, so "AL-02 - 10 minutes" is not read as AL-02..AL-10.
+    rng = rf"\b({alt})-(\d{{1,3}})\s*(?:…|\.\.\.|–|-|to)\s*\1-(\d{{1,3}})\b"
     for m in re.finditer(rng, text):
         lo, hi = int(m.group(2)), int(m.group(3))
         if lo <= hi <= lo + 60:
