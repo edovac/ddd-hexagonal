@@ -1,6 +1,6 @@
 {
   "name": "ddd-hexagonal",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Spec-driven development with Domain-Driven Design and hexagonal (ports and adapters) architecture, in any language: interview-driven document set, one use case at a time, test first, architecture checks and rule-ID traceability.",
   "author": {
     "name": "Edoardo Vaccaro",

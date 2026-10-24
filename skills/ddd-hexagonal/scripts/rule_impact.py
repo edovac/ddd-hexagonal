@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# ///
 """List every place a rule ID or use case ID is mentioned: documents, tests and code.
 
 Usage:
-    python rule_impact.py AL-06 [BK-01 UC-02 ...] [--root .]
+    uv run rule_impact.py AL-06 [BK-01 UC-02 ...] [--root .]
 
 Prints file:line for each mention, grouped as docs (*.md), tests (paths containing
 test/tests/spec) and code (everything else), skipping .git, virtual environments,
@@ -10,6 +13,7 @@ dependency folders and build output. Use it before changing a rule so the impact
 analysis starts from facts instead of memory.
 """
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
@@ -28,6 +32,16 @@ def group(path: Path) -> str:
     return "code"
 
 
+def files(root: Path):
+    """Text-like files under root, without descending into skipped folders."""
+    for d, dirs, names in os.walk(root):
+        dirs[:] = sorted(x for x in dirs if x not in SKIP)
+        for name in sorted(names):
+            f = Path(d) / name
+            if f.suffix.lower() not in BINARY:
+                yield f
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -38,9 +52,7 @@ def main() -> int:
     patterns = {i: re.compile(rf"(?<![A-Za-z0-9-]){re.escape(i)}(?![0-9])") for i in a.ids}
     root = Path(a.root)
     found = {i: {"docs": [], "tests": [], "code": []} for i in a.ids}
-    for f in root.rglob("*"):
-        if not f.is_file() or f.suffix.lower() in BINARY or SKIP & set(f.relative_to(root).parts):
-            continue
+    for f in files(root):
         try:
             lines = f.read_text(encoding="utf-8", errors="strict").splitlines()
         except (UnicodeDecodeError, OSError):

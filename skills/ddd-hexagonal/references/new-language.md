@@ -9,7 +9,7 @@ When the project's language has no reference file, create `references/<language>
 3. **Architecture check:** a configuration that fails the build when the domain imports a framework, driver or adapter, when the application imports an adapter, or when adapters import each other. Prefer an established tool for the language. If none exists, use `scripts/check_imports.py`:
 
    ```
-   python <skill-dir>/scripts/check_imports.py --dir src/domain --forbid "^(use|import|require)\b.*(Framework|Driver)"
+   uv run tools/check_imports.py --dir src/domain --forbid "^(use|import|require)\b.*(Framework|Driver)"
    ```
 
    It scans files for import-style lines matching a pattern and exits non-zero on any match. Run it in CI like any other test.

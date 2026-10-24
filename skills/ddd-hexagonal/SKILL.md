@@ -59,7 +59,7 @@ Fixed layout, so every project reads the same. Templates are in `assets/template
 1. Read what exists. Then run the interview in `references/interview.md`: one decision at a time, with `AskUserQuestion` offering two to four options and a recommendation in front. Never ask something the project files already answer.
 2. After each cluster of answers, write that part of the documents from the templates, so the user reviews real text and not a plan. Keep rules in `business-rules.md` only; flows reference IDs.
 3. Collect doubts as open points in the functional spec instead of inventing answers.
-4. Copy `scripts/check_traceability.py`, `scripts/check_imports.py` and `scripts/rule_impact.py` into the project's `tools/` folder so the project is self-contained and CI can run them. Install the branch guard: copy `assets/hooks/block_commit_on_main.py` to `.claude/hooks/` and merge `assets/hooks/settings.snippet.json` into `.claude/settings.json` (read the file first and merge the `PreToolUse` array; never replace existing settings; if a hook on `Bash` already exists, ask whether to add alongside). It refuses `git commit` while the branch is `main` or `master`. Tell the user it needs `/hooks` opened once or a restart if `.claude/` did not exist when the session began, and that it only guards Claude, so a git `pre-commit` hook is the option for guarding people too. Create `CLAUDE.md` from `assets/templates/claude-md.template.md`, with the commands filled from the language reference and the script paths pointing at `tools/`.
+4. Copy the check scripts into `tools/`, install the branch guard hook and create `CLAUDE.md`, following `references/bootstrap.md`.
 5. Set up the architecture check for the language (the reference file says how) and run `tools/check_traceability.py` once the rules exist. Finish with the deep review.
 6. Stop before building. The user starts the first use case.
 
@@ -104,7 +104,7 @@ Use this when the user asks for a new feature or use case, says a rule, limit or
 
 ## Review
 
-Light review after each use case, deep review after a milestone: follow `references/doc-review.md`. Run `scripts/check_traceability.py --docs docs --tests <tests dir>` first; it finds unknown IDs, rules nobody references and rules without a test, so your reading time goes to the contradictions a script cannot see. Report findings as contradictions (the documents disagree), gaps (nothing says), and duplication (two homes), and fix only what is unambiguous; decisions go to the user as questions with a recommendation.
+Light review after each use case, deep review after a milestone: follow `references/doc-review.md`. Run `tools/check_traceability.py --docs docs --tests <tests dir>` first (and check the `tools/` copies are current, as `references/doc-review.md` says); it finds unknown IDs, rules nobody references and rules without a test, so your reading time goes to the contradictions a script cannot see. Report findings as contradictions (the documents disagree), gaps (nothing says), and duplication (two homes), and fix only what is unambiguous; decisions go to the user as questions with a recommendation.
 
 ## Code review
 

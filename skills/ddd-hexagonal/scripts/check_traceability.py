@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# ///
 """Check that business rule IDs, use cases and tests agree.
 
 Usage:
-    python check_traceability.py --docs docs [--rules docs/business-rules.md]
+    uv run check_traceability.py --docs docs [--rules docs/business-rules.md]
                                  [--use-cases docs/use-cases.md] [--tests tests]
                                  [--strict]
 
