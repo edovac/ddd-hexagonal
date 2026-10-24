@@ -49,7 +49,7 @@ The branch guard hook is not enabled by the plugin. The skill installs it into e
 | `skills/ddd-hexagonal/scripts/check_traceability.py` | Checks rule IDs, use cases and test citations |
 | `skills/ddd-hexagonal/scripts/check_imports.py` | Fallback architecture check for languages without a tool |
 | `skills/ddd-hexagonal/scripts/rule_impact.py` | Lists every mention of a rule or use case ID in docs, tests and code, for impact analysis |
-| `skills/ddd-hexagonal/evals/evals.json` | Test prompts and assertions used to evaluate the skill |
+| `skills/ddd-hexagonal/evals/` | Test prompts and assertions (`evals.json`), fixture projects and the script that sets one up |
 
 ## Adding a language
 
