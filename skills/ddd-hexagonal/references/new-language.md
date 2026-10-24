@@ -1,6 +1,8 @@
 # Adding a language
 
-When the project's language has no reference file, create `references/<language>.md` with the same sections as `php.md` before building anything. Tell the user you are doing it, ask them to confirm the tool choices, and save the file in the skill folder so later projects reuse it.
+When the project's language has no reference file, create one with the same sections as `php.md` before building anything. Tell the user you are doing it and ask them to confirm the tool choices.
+
+Save it in the project as `.claude/ddd-hexagonal/<language>.md`, commit it with the project, and point to it from `CLAUDE.md`. Do not save it in the skill folder: in a plugin install that folder is a cache that each update replaces, so the file would be lost. If the language is likely to come up again, suggest the user contribute the file to the plugin as `references/<language>.md`.
 
 ## What the file must answer
 

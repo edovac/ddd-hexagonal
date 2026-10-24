@@ -1,6 +1,6 @@
 # Bootstrap interview
 
-Goal: collect enough decisions to write the five documents without inventing anything. Ask one decision at a time with `AskUserQuestion` (two to four options, the recommendation first and marked). Group two to four small related questions in one call. Skip anything the project files, existing documents or the conversation already answer. After each cluster, write that part of the documents so the user reviews real text.
+Goal: collect enough decisions to write the document set without inventing anything. Ask one decision at a time with `AskUserQuestion` (two to four options, the recommendation first and marked). Group two to four small related questions in one call. Skip anything the project files, existing documents or the conversation already answer. After each cluster, write that part of the documents so the user reviews real text.
 
 When the answer is unknown or depends on someone else, record it as an open point in the functional spec and move on.
 
