@@ -40,6 +40,8 @@ UC_ROW = re.compile(r"^\|\s*(UC-\d{1,3})\s*\|(.*)$", re.M)
 
 ROW = re.compile(r"^\|\s*([A-Z]{2,5}-\d{1,3}|UC-\d{1,3})\s*\|(.*)$", re.M)
 MARKER = re.compile(r"\((removed|superseded)", re.I)
+SKIP_DIRS = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", "node_modules", ".venv", "build", "target"}
+BINARY = {".pyc", ".pyo", ".class", ".png", ".jpg", ".gif", ".pdf", ".zip"}
 LINE_REF = re.compile(r"[\w./-]+\.(?:py|pyi|ts|tsx|js|jsx|php|java|kt|kts|go|rb|cs|sql)(?::\d+(?:[-,]\d+)*)+\b")
 
 
@@ -194,7 +196,10 @@ def main() -> int:
         cited: set[str] = set()
         if tests.exists():
             for f in tests.rglob("*"):
-                if f.is_file() and f.suffix not in {".png", ".jpg", ".gif", ".pdf", ".zip"}:
+                # Compiled and cache files can still hold IDs of tests that were deleted.
+                if any(part in SKIP_DIRS for part in f.parts) or f.suffix in BINARY:
+                    continue
+                if f.is_file():
                     cited |= expand(read(f), prefixes)
         else:
             warnings.append(f"tests folder not found: {tests}")
