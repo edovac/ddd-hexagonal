@@ -1,6 +1,6 @@
 ---
 name: ddd-hexagonal
-description: Spec-driven development with Domain-Driven Design and hexagonal (ports and adapters) architecture, in any language. Bootstraps a project's documents (business rules with IDs, use cases, domain model, specs) through an interview, then drives every task one use case at a time, test first. Use this whenever the user starts a new application, service or module that has business rules; adds a feature or use case, changes, adds or removes a rule or requirement, renames a concept, or swaps a framework, library or database in a project with these documents; mentions DDD, domain model, aggregates, bounded contexts, hexagonal, ports and adapters, clean architecture, business rules, use cases, or "write the specs before the code"; asks to implement a use case or rule in a project that has docs/business-rules.md or docs/use-cases.md; wants to review project docs for contradictions or duplication; or asks for a code review in a project with these documents - even if they never name DDD or hexagonal.
+description: Spec-driven development with Domain-Driven Design and hexagonal (ports and adapters) architecture, in any language. Writes a project's documents (business rules with IDs, use cases, domain model, specs) through an interview or from existing code, then drives every task one use case at a time, test first. Use this whenever the user starts an application, service or module that has business rules, or wants an existing or legacy codebase's rules documented or brought under this workflow; adds a feature or use case, changes, adds or removes a rule, renames a concept, or swaps a library or database in a project with these documents; mentions DDD, aggregates, bounded contexts, hexagonal, ports and adapters, clean architecture, business rules, use cases, or "specs before code"; asks to implement a use case in a project with docs/business-rules.md; wants project docs reviewed for contradictions or duplication; or asks for a code review in such a project - even if they never name DDD or hexagonal.
 ---
 
 # DDD + hexagonal, driven by documents
@@ -13,7 +13,8 @@ Look at the project first, then choose:
 
 | Situation | Mode |
 | --- | --- |
-| No business rules document, or a new project | **Bootstrap**: interview, then write the documents |
+| A new project, or no source code yet | **Bootstrap**: interview, then write the documents |
+| Working code but no document set, or `docs/adoption.md` lists areas not adopted yet | **Adopt**: find the rules in the code, have the user confirm them, pin them with tests, one area at a time |
 | The user asks to implement a use case that `use-cases.md` already lists | **Build**: one use case at a time |
 | Something the documents do not hold yet, or hold differently: a new feature or use case, a changed or dropped rule ("it's 4 hours now"), a technology swap, or a rename | **Change**: name the kinds, impact analysis, then documents, tests, code |
 | A use case or milestone is finished, or the user asks for a check | **Review**: documentation and traceability |
@@ -21,7 +22,7 @@ Look at the project first, then choose:
 
 Build and Change are told apart by `use-cases.md`: a request it already covers is Build; anything it does not cover yet is Change, which updates the documents first and then builds through the Build steps.
 
-If the project has some documents but not the set below, say what is missing and offer to Bootstrap the missing parts only. Detect the language from manifests (`composer.json`, `package.json` or `tsconfig.json`, `pyproject.toml` or `requirements.txt`, `pom.xml` or `build.gradle*`) and read the matching file in `references/` (`php.md`, `typescript.md`, `python.md`, `java-kotlin.md`). For any other language, use the project's `.claude/ddd-hexagonal/<language>.md` if it exists; otherwise read `references/new-language.md` and offer to create it.
+Bootstrap and Adopt are told apart by the code: with an application that already runs, its rules are in the code, so Adopt reads them from there instead of asking the user to recall them. If the project has some documents but not the set below, say what is missing and offer to Bootstrap the missing parts only (or Adopt them, when the code holds the answers). In a project that is partly adopted, Build and Change apply to adopted areas only; `references/adopt.md` section 10 says what to do in the others. Detect the language from manifests (`composer.json`, `package.json` or `tsconfig.json`, `pyproject.toml` or `requirements.txt`, `pom.xml` or `build.gradle*`) and read the matching file in `references/` (`php.md`, `typescript.md`, `python.md`, `java-kotlin.md`). For any other language, use the project's `.claude/ddd-hexagonal/<language>.md` if it exists; otherwise read `references/new-language.md` and offer to create it.
 
 ## Non-negotiable practices
 
@@ -35,12 +36,13 @@ These hold in every project. The reason is given so you can apply them with judg
 
 ## Defaults the user may override
 
-Ask once at Bootstrap and record the answers in the project's `CLAUDE.md`:
+Ask once at Bootstrap (or the first Adopt run) and record the answers in the project's `CLAUDE.md`:
 
 - Code, comments, identifiers, database names, routes and commit messages in English, even when the interface is in another language. User-visible text lives in templates and translation files, and failed checks return English codes mapped to messages there.
-- Before changing code, check the branch. On the main branch, propose a new branch and ask before creating it. Commit only when asked.
+- Before changing code, check the branch. On the main branch, propose a new branch and ask before creating it: follow the project's own naming convention if it has one, otherwise suggest `<mode>/<short-slug>` (`adopt/lending`, `change/booking-limits`), so the branch says which kind of work it holds. It is a suggestion the user may change, not a rule. Review, and Code review without `--fix`, change no code and need no branch. Commit only when asked.
 - Tests: unit tests for rules, integration tests against the real database, no coverage percentage, deploy or CI stops on a failing test, static analysis or architecture check.
 - Hexagonal-lite: ports only at real seams (see `references/architecture.md`).
+- Reports: concise (the mode's fixed report block and the decisions needed) or detailed (the block, then a short explanation of each finding and decision). Default concise; the user can ask for the other form at any time, for one report or from then on.
 - Logging: never assume it. Ask the developer explicitly whether to adopt `references/logging.md` (one DEBUG on entry and one INFO on completion per adapter call and use case, no personal data in logs), adapt it, or leave logging out.
 
 ## The document set
@@ -64,6 +66,17 @@ Fixed layout, so every project reads the same. Templates are in `assets/template
 4. Copy the check scripts into `tools/`, install the branch guard hook and create `CLAUDE.md`, following `references/bootstrap.md`.
 5. Set up the architecture check for the language (the reference file says how) and run `tools/check_traceability.py` once the rules exist. Finish with the deep review.
 6. Stop before building. The user starts the first use case.
+
+## Adopt: existing code, one area at a time
+
+Follow `references/adopt.md`. Two guarantees make it safe: production code does not change during Adopt (only documents, tests and tool configuration), and only the user turns a candidate found in the code into a rule.
+
+1. Branch check, then record the starting state: the existing test suite's real result.
+2. First run only: map entry points, tables and external systems into areas in `docs/adoption.md` (template in `assets/templates/`), write the shared documents with the stack as found, install `tools/` and the branch guard, and have the user pick the first area.
+3. Trace the area's entry points and list every decision the code makes as a candidate with `file:line` evidence; conflicting values and rules enforced only in the interface are findings.
+4. Confirm candidates with the user in small batches: a rule as coded, a rule the code gets wrong (an open point), not a rule, or unknown.
+5. Write the confirmed rules, use cases (Home is where the code lives today), glossary and enforcement table; tag existing tests and add characterization tests for the rest, with an expected-failure test for each rule the code gets wrong.
+6. Turn on the architecture check with a baseline of the existing violations, so only new ones fail. Run all checks, give the adoption report and stop.
 
 ## Build: one use case at a time
 

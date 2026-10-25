@@ -134,6 +134,53 @@
         "The concurrency test makes both transactions check for overlaps before either inserts, so it fails if any one lock is removed"
       ],
       "setup": "uv run evals/setup_fixture.py room-booking-uc01 <project dir>"
+    },
+    {
+      "id": 7,
+      "name": "adopt-library-loans",
+      "prompt": "This repo is the lending desk app for our town library (Flask + PostgreSQL, about three years old). There are no docs and the person who wrote most of it has left, so nobody is sure what all the rules are. We'd like to move it to DDD and hexagonal architecture over time using the ddd-hexagonal workflow. Can you get it started? Lending is what we care about most.",
+      "expected_output": "Adopt mode on the loans area only: an area map in docs/adoption.md, loan rules found in the code and the schema confirmed into business-rules.md with IDs, use cases with their current Home, the conflicting loan limits and float money raised as findings, the existing tests tagged, characterization tests for the rest on the real database, the architecture check with a baseline of today's violations, no production code changed and the already failing test neither fixed nor deleted, and an adoption report.",
+      "files": [
+        "evals/fixtures/library-legacy"
+      ],
+      "assertions": [
+        "No file under src/ or migrations/ was changed",
+        "Work is on a new branch and nothing was committed",
+        "The starting state of the test suite is recorded, including test_fee_is_capped failing, and that test is neither fixed, deleted nor skipped",
+        "docs/adoption.md maps loans, members and catalog (or equivalent areas), with loans adopted and the other areas not adopted",
+        "business-rules.md holds the loan rules with IDs, and no rule of the members or catalog areas (email format, ISBN format, payments) was added",
+        "The two rules that exist only in the schema, one open loan per book and at most 2 renewals, are recorded as loan rules",
+        "The conflicting loan limits (3 in loans.py, 5 in web.py) are raised as a finding or a question, not resolved silently",
+        "Late fees computed on floats are reported as a finding",
+        "Each loan rule names where it is enforced today, as file:line evidence in adoption.md or in the technical spec's enforcement table",
+        "Existing tests that cover a rule are tagged with its rule ID rather than duplicated",
+        "Every loan rule has a test citing its ID or is listed as not testable without changing code, and the traceability check reports no undefined IDs",
+        "Tests other than test_fee_is_capped pass, including new tests against the real PostgreSQL database (expected failures allowed)",
+        "An architecture check is configured and passes, with today's violations recorded as a baseline instead of fixed or switched off",
+        "Adding a new dev tool (such as import-linter) was raised as a question before it was added",
+        "There is one recap, right before the first confirmation question, and its top decisions are written as choices",
+        "Settled candidates are confirmed in one batch and the decision questions are grouped by concept",
+        "For the rules only the database enforces, the user is asked whether the domain should enforce them too",
+        "An adoption report in the skill's format opens the final message"
+      ],
+      "setup": "uv run evals/setup_fixture.py library-legacy <project dir>"
+    },
+    {
+      "id": 8,
+      "name": "adopt-confirmation",
+      "prompt": "This repo is the lending desk app for our town library (Flask + PostgreSQL, about three years old). There are no docs and the person who wrote most of it has left, so nobody is sure what all the rules are. We'd like to move it to DDD and hexagonal architecture over time using the ddd-hexagonal workflow. Can you get it started? Lending is what we care about most.",
+      "expected_output": "Short run of adopt-library-loans that stops once the confirmation questions for the first area are written: one recap right before them, top decisions written as choices, settled candidates in one batch, decisions grouped by concept, a domain-enforcement question for the database-only rules, and no change to production code.",
+      "files": [
+        "evals/fixtures/library-legacy"
+      ],
+      "assertions": [
+        "No file under src/ or migrations/ was changed",
+        "There is one recap, right before the first confirmation question, and its top decisions are written as choices",
+        "Settled candidates are confirmed in one batch and the decision questions are grouped by concept",
+        "For the rules only the database enforces, the user is asked whether the domain should enforce them too"
+      ],
+      "setup": "uv run evals/setup_fixture.py library-legacy <project dir>",
+      "run_note": "Shortened run: stop once the confirmation questions for the first area are in outputs/questions.md (see README, 'Short runs')."
     }
   ]
 }

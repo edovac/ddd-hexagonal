@@ -11,9 +11,11 @@ Fixtures:
     room-booking        documents and scaffold, no use case implemented (eval build-book-room)
     room-booking-uc01   room-booking plus UC-01 implemented, as a second commit (change evals)
     returns-review      documents with planted contradictions, gaps and duplication (eval review-returns-docs)
+    library-legacy      working Flask + PostgreSQL app with no documents, rules scattered (eval adopt-library-loans)
 
 The skill's current scripts are copied into tools/ and the branch guard is installed in
-.claude/, so a fixture never carries stale copies of them.
+.claude/, so a fixture never carries stale copies of them. library-legacy gets neither: it
+stands for a project that has never seen the workflow, and installing them is part of Adopt.
 """
 import json
 import shutil
@@ -28,11 +30,14 @@ LAYERS = {
     "room-booking": ["room-booking"],
     "room-booking-uc01": ["room-booking", "room-booking-uc01"],
     "returns-review": ["returns-review"],
+    "library-legacy": ["library-legacy"],
 }
+WITHOUT_TOOLS = {"library-legacy"}
 MESSAGES = {
     "room-booking": "Bootstrap documents and project scaffold",
     "room-booking-uc01": "Implement UC-01 Book a room",
     "returns-review": "Returns desk documents",
+    "library-legacy": "Lending desk 0.3.2",
 }
 IGNORE = shutil.ignore_patterns(".venv", "__pycache__", "*_cache", ".pytest_cache")
 
@@ -66,7 +71,7 @@ def main() -> int:
     git(dest, "config", "user.email", "fixture@example.test")
     for i, layer in enumerate(LAYERS[name]):
         shutil.copytree(FIXTURES / layer, dest, dirs_exist_ok=True, ignore=IGNORE)
-        if i == 0:
+        if i == 0 and name not in WITHOUT_TOOLS:
             install_tools(dest)
         git(dest, "add", "-A")
         git(dest, "commit", "-q", "-m", MESSAGES[layer])

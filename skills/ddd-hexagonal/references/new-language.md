@@ -21,5 +21,6 @@ Save it in the project as `.claude/ddd-hexagonal/<language>.md`, commit it with 
 7. **Integration database:** how to run the real engine locally and in CI and roll back between tests.
 8. **Error codes:** how domain errors carry an English code and where messages live.
 9. **Logging:** the facade and JSON output, how TRACE maps if the library lacks it, how the correlation ID travels (context variable, MDC), how a value object masks its string form, and how the architecture check forbids the logging library in the domain (`references/logging.md`).
+10. **Existing code (Adopt):** how the architecture check records a baseline of known violations so only new ones fail (the tool's own mechanism, or `check_imports.py --write-baseline` and `--baseline`), and the marker for a test expected to fail (a strict expected failure, or a tag excluded from the normal run).
 
 Keep the file short and mark every configuration snippet as a starting point to be checked against current documentation.

@@ -15,7 +15,7 @@ When the answer is unknown or depends on someone else, record it as an open poin
 7. **Scope.** What is explicitly out. Output: functional "Out of scope".
 8. **Constraints.** Hosting, budget, who maintains it, existing systems, compliance (privacy law, accounting). Output: technical "Hosting constraints" and functional open points.
 9. **Stack.** Language, framework, database, only where the user has a preference or a constraint forces it; otherwise propose with reasons. Check the language reference exists. Output: technical "Stack" table.
-10. **Working rules.** The defaults list in SKILL.md: language of code, branch handling, commit policy, test policy, dependency policy. Output: `CLAUDE.md`.
+10. **Working rules.** The defaults list in SKILL.md: language of code, branch handling and naming, commit policy, test policy, dependency policy, report detail (concise or detailed). Output: `CLAUDE.md`.
     **Logging** is always its own explicit question, never assumed: summarise `references/logging.md` in three lines (one DEBUG on entry and one INFO on completion per adapter call and use case, a correlation ID, an allowlist that keeps personal data out of logs) and offer: adopt it (recommended), adopt it with changes (ask which), or leave logging out of scope for now. If adopted, also ask the log destination, retention period and the level per environment. Output: technical "Logging", the "Personal data" section of the domain model, a line in `CLAUDE.md`.
 11. **Milestones.** Group the use cases into rollout steps; each step is a "slice group" for the deep review. Output: functional "Rollout".
 

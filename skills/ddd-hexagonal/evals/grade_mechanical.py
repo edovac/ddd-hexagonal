@@ -35,7 +35,8 @@ from pathlib import Path
 
 EVALS = Path(__file__).resolve().parent
 COMMITS_AT_START = {"bootstrap-invoicing": 0, "build-book-room": 1, "review-returns-docs": 1,
-                    "change-booking-limits": 2, "change-new-use-case": 2, "change-db-swap": 2}
+                    "change-booking-limits": 2, "change-new-use-case": 2, "change-db-swap": 2,
+                    "adopt-library-loans": 1, "adopt-confirmation": 1}
 SKIP_DIRS = {".venv", "__pycache__", ".git", "node_modules", ".mypy_cache", ".ruff_cache", ".pytest_cache"}
 WEB = r"fastapi|flask|django|starlette|aiohttp|uvicorn|tornado|bottle|sanic|APIRouter|@app\.(get|post|put|delete)"
 DRIVERS = r"psycopg|pymysql|mysql|sqlalchemy|asyncpg|sqlite3|django|flask|fastapi|requests|httpx|boto3"
@@ -670,6 +671,204 @@ def mysql_write_paths(ctx: Ctx):
         return not bad, "; ".join(f"{k}={'ok' if v else 'FAILED'}" for k, v in results.items())
     finally:
         run(f"DROP DATABASE IF EXISTS {db}")
+
+
+# ---- adopt-library-loans ----------------------------------------------------------------------------------
+
+def full_suite(ctx: Ctx):
+    """Run the whole suite; returns (failed test ids, errors, summary line) or None when not runnable."""
+    if "DATABASE_URL" not in ctx.extra_env:
+        return None
+    rc, out = ctx.tool("suite", ["uv", "run", "pytest", "-q", "-rfE", "-p", "no:cacheprovider"])
+    failed = re.findall(r"^FAILED (\S+)", out, re.M)
+    errors = re.findall(r"^ERROR (\S+)", out, re.M)
+    return failed, errors, out.splitlines()[-1] if out else "no output"
+
+
+@check("adopt-library-loans", "No file under src/ or migrations/")
+@check("adopt-confirmation", "No file under src/ or migrations/")
+def _(ctx):
+    rc, out = ctx.git("status", "--porcelain", "--untracked-files=all", "--", "src", "migrations")
+    rc2, diff = ctx.git("diff", "--stat", "HEAD", "--", "src", "migrations")
+    return not out.strip() and not diff.strip(), f"changes: {out.replace(chr(10), ', ') or 'none'}"
+
+
+@check("adopt-library-loans", "Work is on a new branch")
+def _(ctx): return branch_and_commits(ctx)
+
+
+@check("adopt-library-loans", "The starting state of the test suite")
+def _(ctx):
+    test = ctx.read("tests/test_fees.py")
+    m = re.search(r"((?:^@.*\n)*)def test_fee_is_capped\(\):\n(.*?)(?=^def |\Z)", test, re.M | re.S)
+    if not m:
+        return False, "test_fee_is_capped is gone from tests/test_fees.py"
+    intact = "== 15.0" in m.group(2) and not re.search(r"skip|xfail", m.group(1) + m.group(2))
+    if not intact:
+        return False, f"test_fee_is_capped was changed: {(m.group(1) + m.group(2)).strip()[:120]}"
+    docs = ctx.docs_text()
+    mentioned = "test_fee_is_capped" in docs
+    return (True if mentioned else None), f"test intact; named in docs={mentioned} (else look for the starting state in the report)"
+
+
+@check("adopt-library-loans", "docs/adoption.md maps")
+def _(ctx):
+    text = ctx.read("docs/adoption.md")
+    if not text:
+        return False, "docs/adoption.md missing"
+    areas = {a: bool(re.search(a, text, re.I)) for a in ("loan", "member", "catalog|book")}
+    return None, f"areas named: {areas}; statuses: {sorted(set(re.findall(r'not adopted|in progress|adopted', text, re.I)))}"
+
+
+@check("adopt-library-loans", "business-rules.md holds the loan rules")
+def _(ctx):
+    rules = ctx.read("docs/business-rules.md")
+    if not rules:
+        return False, "docs/business-rules.md missing"
+    rows = RULE_ROW.findall(rules)
+    other = [f"{i}: {r.strip()[:60]}" for i, r in rows if re.search(r"e-?mail|isbn|payment|pay_fees|\bpays?\b", r, re.I)]
+    return None, f"{len(rows)} rule rows; rows touching other areas: {other or 'none'}"
+
+
+@check("adopt-library-loans", "The two rules that exist only in the schema")
+def _(ctx):
+    rows = " ".join(r for _, r in RULE_ROW.findall(ctx.read("docs/business-rules.md")))
+    one = bool(re.search(r"one (open|active|current)|single (open|active)|already (on loan|lent|out)|at a time", rows, re.I))
+    ren = bool(re.search(r"renew\w*[^|]*\b(2|two)\b|\b(2|two)\b[^|]*renew", rows, re.I))
+    return (True if one and ren else None), f"one-open-loan rule found={one}; max-2-renewals rule found={ren}"
+
+
+@check("adopt-library-loans", "The conflicting loan limits")
+def _(ctx):
+    text = ctx.docs_text() + ctx.output_text("questions.md")
+    hits = grep([p for p in ctx.files("docs/*.md")], r"web\.py.*\b5\b|\b5\b.*web\.py|MAX_LOANS\s*=\s*5|\b3\b.*\b5\b|\b5\b.*\b3\b")
+    q = bool(re.search(r"\b5\b", ctx.output_text("questions.md")))
+    return None, f"doc lines naming both limits: {hits[:3]}; questions.md mentions 5={q}"
+
+
+@check("adopt-library-loans", "Late fees computed on floats")
+def _(ctx):
+    hits = grep(ctx.files("docs/*.md"), r"float|decimal|rounding")
+    return None, f"doc lines on float/decimal: {hits[:3]}"
+
+
+@check("adopt-library-loans", "Each loan rule names where it is enforced")
+def _(ctx):
+    refs = grep(ctx.files("docs/*.md"), r"\b[\w/]+\.(py|sql):\d+")
+    return None, f"{len(refs)} file:line reference(s) in docs, e.g. {refs[:3]}"
+
+
+@check("adopt-library-loans", "Existing tests that cover a rule")
+def _(ctx):
+    tagged = bool(re.search(r"@rule\s+[A-Z]{2,5}-\d", ctx.read("tests/test_fees.py")))
+    dupes = [h for h in grep(ctx.files("tests/**/*.py"), r"late_fee\(") if not h.startswith("test_fees.py")]
+    return (True if tagged and not dupes else None), f"test_fees.py tagged={tagged}; late_fee tests elsewhere: {dupes[:3] or 'none'}"
+
+
+@check("adopt-library-loans", "Every loan rule has a test")
+def _(ctx):
+    ok, ev = traceability(ctx, history=False)
+    if not ok:
+        return False, ev
+    out = ctx._cache.get("trace-False", (1, ""))[1]
+    untested = [l for l in out.splitlines() if "has no test" in l]
+    return (True if not untested else None), ev + f"; rules without a test: {len(untested)} (compare with the 'not testable' list)"
+
+
+@check("adopt-library-loans", "Tests other than test_fee_is_capped pass")
+def _(ctx):
+    res = full_suite(ctx)
+    if res is None:
+        return None, "not run: pass --env DATABASE_URL=..."
+    failed, errors, last = res
+    others = [f for f in failed if "test_fee_is_capped" not in f]
+    if errors and not others:
+        return None, f"{len(errors)} error(s) at setup ({last}); check the project's database convention"
+    new_db_tests = grep(ctx.files("tests/**/*.py"), r"DATABASE_URL|connect\(|psycopg")
+    return not others and not errors and bool(new_db_tests), f"{last}; other failures: {others or 'none'}; tests using the database: {len(new_db_tests)}"
+
+
+@check("adopt-library-loans", "An architecture check is configured")
+def _(ctx):
+    py = ctx.read("pyproject.toml")
+    if "importlinter" in py:
+        rc, out = ctx.tool("lint-imports", ["uv", "run", "lint-imports"])
+        ignores = len(re.findall(r'"[\w.]+ -> [\w.]+"', py))
+        return None, f"lint-imports exit {rc}: {out.splitlines()[-1][:80] if out else ''}; ignore_imports entries: {ignores}"
+    base = ctx.files("**/*baseline*")
+    return None, f"no import-linter config; baseline-like files: {[str(b.relative_to(ctx.project)) for b in base][:3]}"
+
+
+def dependency_lists(text: str) -> str:
+    """Only the dependency arrays of a pyproject, so contract names and comments are not read as packages."""
+    return "\n".join(re.findall(r"^\s*(?:dependencies|dev|test)\s*=\s*\[(.*?)\]", text, re.M | re.S))
+
+
+@check("adopt-library-loans", "Adding a new dev tool")
+def _(ctx):
+    old = pyproject_deps(dependency_lists(ctx.head_text("pyproject.toml") or ""))
+    new = pyproject_deps(dependency_lists(ctx.read("pyproject.toml")))
+    added = sorted(new - old)
+    if not added:
+        return True, "no dependency added"
+    q = ctx.output_text("questions.md").lower()
+    asked = [d for d in added if d.lower() in q]
+    return (len(asked) == len(added)) if q else None, f"added={added}; named in questions.md={asked}"
+
+
+def question_sections(ctx: Ctx) -> list[tuple[str, str]]:
+    """(heading, body) of each '## ' section of outputs/questions.md, in order."""
+    text = ctx.output_text("questions.md")
+    parts = re.split(r"^##\s+(.*)$", text, flags=re.M)
+    return list(zip(parts[1::2], parts[2::2]))
+
+
+CHOICE = re.compile(r"\bor\b|\?|\bvs\.?\b|\bversus\b", re.I)
+
+
+@check("adopt-library-loans", "There is one recap, right before")
+@check("adopt-confirmation", "There is one recap, right before")
+def recap_form(ctx):
+    """The recap is found by position, not by its title: the shown (non-question) sections between the
+    choice of area and the batch of settled candidates. Exactly one is expected, directly before the batch."""
+    secs = question_sections(ctx)
+    if not secs:
+        return False, "no outputs/questions.md sections"
+    heads = [h for h, _ in secs]
+    is_question = lambda h: bool(re.match(r"(Q|Questions?)\s*\d|\d+\.\s", h)) and not re.search(r"shown|recap|summary", h, re.I)
+    batch = next((i for i, h in enumerate(heads) if re.search(r"settled|integrity", h, re.I) and is_question(h)), None)
+    if batch is None:
+        return False, "no batch of settled candidates, so no confirmation start to find a recap before"
+    area = max((i for i, h in enumerate(heads[:batch]) if re.search(r"first area|which area|area", h, re.I) and is_question(h)), default=-1)
+    shown = [i for i in range(area + 1, batch) if not is_question(heads[i])]
+    if len(shown) != 1 or shown[0] != batch - 1:
+        return False, f"shown sections between area choice and batch: {[heads[i][:45] for i in shown]}"
+    body = secs[batch - 1][1]
+    tail = re.split(r"matter most|most important|key decisions|decisions that matter|decisions? (you|to) (make|take)", body, flags=re.I)
+    items = re.findall(r"^\s*\d+\.\s+(.*)$", tail[-1] if len(tail) > 1 else body, re.M)
+    choices = [it for it in items if CHOICE.search(it)]
+    ratio = len(choices) / len(items) if items else 0
+    return len(items) >= 3 and ratio >= 0.75, f"recap '{heads[batch - 1][:45]}'; {len(choices)}/{len(items)} top decisions written as choices"
+
+
+@check("adopt-library-loans", "Settled candidates are confirmed in one batch")
+@check("adopt-confirmation", "Settled candidates are confirmed in one batch")
+def _(ctx):
+    heads = [h for h, _ in question_sections(ctx)]
+    last_recap = max((i for i, h in enumerate(heads) if re.search(r"recap|summary", h, re.I)), default=-1)
+    batch = [h for h in heads[last_recap + 1:] if re.search(r"settled|integrity|one batch", h, re.I)]
+    return (None if batch else False), f"batch section: {batch[:1] or 'none'}; headings after it: {heads[heads.index(batch[0]) + 1:][:6] if batch else []}"
+
+
+@check("adopt-confirmation", "For the rules only the database enforces")
+def _(ctx):
+    q = ctx.output_text("questions.md")
+    asked = bool(re.search(r"(in|by) the domain[^.\n]*(as well|too|also)|database alone|only the database", q, re.I))
+    return (True if asked else None), f"domain-enforcement option found in questions.md={asked}"
+
+
+@check("adopt-library-loans", "An adoption report in the skill's format opens")
+def _(ctx): return None, "report content"
 
 
 # ---- driver ------------------------------------------------------------------------------------------------

@@ -52,6 +52,8 @@ Examples: swapping the database or a library, adding a queue, splitting a contex
 5. **Tooling.** Update the architecture-check configuration (forbidden modules), Docker or CI setup, the integration test setup and the hosting constraints.
 6. **Verify** on the real new technology (start it in Docker), not on a substitute.
 
+**Moving adopted code into the layers** is a technical change too. The tests Adopt added are the net: they stay green at every step. Move one use case at a time, remove its entries from the architecture baseline, update its Home in `use-cases.md` and the enforcement table, and report the baseline count before and after.
+
 ## 5. Rename a term
 
 1. Update the glossary in the domain model first (code term, interface term, meaning, and the old term under "avoid").

@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-POSTGRES = {"build-book-room", "change-booking-limits", "change-new-use-case"}
+POSTGRES = {"build-book-room", "change-booking-limits", "change-new-use-case", "adopt-library-loans"}
 MYSQL = {"change-db-swap"}
 
 
