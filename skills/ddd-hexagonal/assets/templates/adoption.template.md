@@ -15,9 +15,11 @@ Working file while existing code is brought under the workflow (`references/adop
 
 ## Areas
 
-| Area | Entry points | Includes | Main tables | Status | Rules | Use cases |
-| --- | --- | --- | --- | --- | --- | --- |
-| <Name> | `<route or command>`, … | `<module>`, … (shared: `<module>`, also used by <area>) | `<table>`, … | not adopted · in progress · adopted | <IDs once adopted> | <IDs once adopted> |
+Status and order are in `plan.md`.
+
+| Area | Entry points | Includes | Main tables | Rules | Use cases |
+| --- | --- | --- | --- | --- | --- |
+| <Name> | `<route or command>`, … | `<module>`, … (shared: `<module>`, also used by <area>) | `<table>`, … | <IDs once adopted> | <IDs once adopted> |
 
 ## Candidates: <area in progress>
 

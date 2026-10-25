@@ -51,7 +51,7 @@ A member borrows a book on a loan, which has a due date and may be renewed; the 
 - [ ] **No authentication:** who may use the app, and how staff log in. Library management.
 - [ ] **Hosting, backup, log retention:** where the app runs, how the database is backed up, how long logs are kept. Whoever runs the server.
 
-**Rollout**
+**Rollout** (progress is in `plan.md`)
 
-1. Adopt Lending: LN-01 to LN-12, UC-01 to UC-03 (done 2026-10-25).
+1. Adopt Lending: LN-01 to LN-12, UC-01 to UC-03.
 2. Adopt Fees and suspension, then Members and Catalog.

@@ -16,12 +16,14 @@ Working file while existing code is brought under the workflow (`references/adop
 
 ## Areas
 
-| Area | Entry points | Main tables | Status | Rules | Use cases |
-| --- | --- | --- | --- | --- | --- |
-| Lending | `POST /loans`, `POST /loans/<id>/renewal`, `POST /loans/<id>/return` | `loans` (reads `members`, `books`) | adopted 2026-10-25 | LN-01 to LN-12 | UC-01 to UC-03 |
-| Fees and suspension | `POST /members/<id>/payments`; fee charging inside `POST /loans/<id>/return` | `members.fees_owed`, `members.suspended` | not adopted | | |
-| Members | `POST /members` | `members` | not adopted | | |
-| Catalog | `POST /books` | `books` | not adopted | | |
+Status and order are in `plan.md`.
+
+| Area | Entry points | Main tables | Rules | Use cases |
+| --- | --- | --- | --- | --- |
+| Lending | `POST /loans`, `POST /loans/<id>/renewal`, `POST /loans/<id>/return` | `loans` (reads `members`, `books`) | LN-01 to LN-12 | UC-01 to UC-03 |
+| Fees and suspension | `POST /members/<id>/payments`; fee charging inside `POST /loans/<id>/return` | `members.fees_owed`, `members.suspended` | | |
+| Members | `POST /members` | `members` | | |
+| Catalog | `POST /books` | `books` | | |
 
 External systems: none (no mail, payment or identity provider).
 

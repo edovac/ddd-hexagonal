@@ -171,6 +171,11 @@ def domain_forbidden(ctx: Ctx, pattern: str, layers=("domain",)):
     return not hits, f"{len(hits)} hit(s)" + (": " + "; ".join(hits[:4]) if hits else "")
 
 
+def dependency_lists(text: str) -> str:
+    """Only the dependency arrays of a pyproject, so contract names and comments are not read as packages."""
+    return "\n".join(re.findall(r"^\s*(?:dependencies|dev|test)\s*=\s*\[(.*?)\]", text, re.M | re.S))
+
+
 def pyproject_deps(text: str) -> set[str]:
     return set(re.findall(r'"([A-Za-z0-9_.\-]+)(?:\[[^\]]*\])?[<>=!~ ][^"]*"', text))
 
@@ -369,7 +374,8 @@ def _(ctx):
 
 @check("build-book-room", "No dependency outside")
 def _(ctx):
-    old, new = pyproject_deps(ctx.head_text("pyproject.toml") or ""), pyproject_deps(ctx.read("pyproject.toml"))
+    old = pyproject_deps(dependency_lists(ctx.head_text("pyproject.toml") or ""))
+    new = pyproject_deps(dependency_lists(ctx.read("pyproject.toml")))
     added = sorted(new - old)
     return not added, f"dependencies added to pyproject.toml: {added or 'none'}"
 
@@ -591,7 +597,8 @@ def _(ctx):
 
 @check("change-db-swap", "The new driver is recorded")
 def _(ctx):
-    old, new = pyproject_deps(ctx.head_text("pyproject.toml") or ""), pyproject_deps(ctx.read("pyproject.toml"))
+    old = pyproject_deps(dependency_lists(ctx.head_text("pyproject.toml") or ""))
+    new = pyproject_deps(dependency_lists(ctx.read("pyproject.toml")))
     added = sorted(new - old)
     spec = ctx.read("docs/technical-spec.md").lower()
     stack = section(ctx.read("docs/technical-spec.md"), "Stack").lower()
@@ -802,11 +809,6 @@ def _(ctx):
     return None, f"no import-linter config; baseline-like files: {[str(b.relative_to(ctx.project)) for b in base][:3]}"
 
 
-def dependency_lists(text: str) -> str:
-    """Only the dependency arrays of a pyproject, so contract names and comments are not read as packages."""
-    return "\n".join(re.findall(r"^\s*(?:dependencies|dev|test)\s*=\s*\[(.*?)\]", text, re.M | re.S))
-
-
 @check("adopt-library-loans", "Adding a new dev tool")
 def _(ctx):
     old = pyproject_deps(dependency_lists(ctx.head_text("pyproject.toml") or ""))
@@ -943,6 +945,41 @@ def _(ctx):
 def _(ctx):
     rep = ctx.output_text("report.md").lstrip("`\n ")
     return (True if rep.startswith("Fix:") else None), f"report starts with: {rep[:60]!r}"
+
+
+# ---- progress plan ----------------------------------------------------------------------------------------
+
+def plan_lines(ctx: Ctx, pattern: str) -> list[str]:
+    return [l.strip() for l in ctx.read("docs/plan.md").splitlines() if re.search(pattern, l)]
+
+
+def now_clear(ctx: Ctx) -> bool:
+    now = section(ctx.read("docs/plan.md"), "Now")
+    return not re.search(r"^\s*- \[ \]", now, re.M)
+
+
+@check("build-book-room", "docs/plan.md was created from the documents")
+def _(ctx):
+    if not (ctx.project / "docs/plan.md").is_file():
+        return False, "docs/plan.md missing"
+    uc1, uc2 = plan_lines(ctx, r"\bUC-01\b"), plan_lines(ctx, r"\bUC-02\b")
+    ok = any(l.startswith("- [x]") for l in uc1) and bool(uc2) and all(l.startswith("- [ ]") for l in uc2)
+    return ok, f"UC-01: {uc1[:1]}; UC-02: {uc2[:1]}; Now clear={now_clear(ctx)}"
+
+
+@check("fix-double-return", "In docs/plan.md the LN-12 fix is ticked")
+def _(ctx):
+    fixes = [l for l in plan_lines(ctx, r"\bLN-12\b")]
+    ticked = [l for l in fixes if l.startswith("- [x]") and re.search(r"\d{4}-\d{2}-\d{2}", l)]
+    before = len(re.findall(r"^- \[", section(ctx.head_text("docs/plan.md") or "", "Follow-ups"), re.M))
+    after = len(re.findall(r"^- \[", section(ctx.read("docs/plan.md"), "Follow-ups"), re.M))
+    ok = bool(ticked) and now_clear(ctx)
+    return (ok if not ok else None), f"LN-12 lines: {fixes[:2]}; Now clear={now_clear(ctx)}; follow-ups {before} -> {after} (judge against the report)"
+
+
+@check("build-book-room", "The run kept a session task list")
+@check("fix-double-return", "The run kept a session task list")
+def _(ctx): return None, "log.md [task list] lines or transcript"
 
 
 # ---- driver ------------------------------------------------------------------------------------------------

@@ -7,13 +7,16 @@
 Usage:
     uv run check_traceability.py --docs docs [--rules docs/business-rules.md]
                                  [--use-cases docs/use-cases.md] [--tests tests]
-                                 [--strict]
+                                 [--plan docs/plan.md] [--strict]
 
 What it checks
   * Rule IDs used in any document but not defined in the rules file (error).
   * Rules defined but never referenced by a use case or another document (warning).
   * Rules cited in no test file (warning, error with --strict).
   * Use cases that list no rule IDs (warning).
+  * With a plan (docs/plan.md, or --plan): use case IDs it cites that do not exist (error),
+    and live use cases it does not list (warning). The plan does not count as a document
+    that references a rule.
 
 A rule is defined by a table row that starts with its ID, e.g. "| AL-06 | ... |".
 Prefixes are learned from those rows, so ordinary tokens such as SHA-256 are ignored.
@@ -83,6 +86,7 @@ def main() -> int:
     ap.add_argument("--docs", default="docs")
     ap.add_argument("--rules", default=None)
     ap.add_argument("--use-cases", default=None)
+    ap.add_argument("--plan", default=None, help="progress plan (default docs/plan.md if it exists)")
     ap.add_argument("--tests", default=None)
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--since", default="HEAD", help="git ref to compare IDs against (default HEAD)")
@@ -92,6 +96,7 @@ def main() -> int:
     docs = Path(a.docs)
     rules_file = Path(a.rules) if a.rules else docs / "business-rules.md"
     uc_file = Path(a.use_cases) if a.use_cases else docs / "use-cases.md"
+    plan_file = Path(a.plan) if a.plan else docs / "plan.md"
     if not rules_file.exists():
         print(f"error: rules file not found: {rules_file}")
         return 1
@@ -133,6 +138,8 @@ def main() -> int:
         if md.resolve() == rules_file.resolve():
             ids -= {f"{p}-{n.zfill(2)}" for p, n in DEF_ROW.findall(text)}
             ids = {i for i in ids if i not in defined}
+        elif plan_file.exists() and md.resolve() == plan_file.resolve():
+            pass  # progress only: citing a rule in the plan is not a reference to it
         else:
             referenced |= ids
         for i in sorted(ids - defined):
@@ -148,6 +155,16 @@ def main() -> int:
             if not ids and "none" not in uc_rest[uc].lower():
                 warnings.append(f"{uc} lists no rule IDs (write 'none' if that is intended)")
         print(f"{len(use_cases)} use cases")
+
+    if plan_file.exists() and use_cases:
+        plan_text = read(plan_file)
+        in_plan = {f"UC-{n.zfill(2)}" for n in re.findall(r"\bUC-(\d{1,3})\b", plan_text)}
+        known = {f"UC-{u.split('-')[1].zfill(2)}" for u in use_cases}
+        for uc in sorted(in_plan - known):
+            errors.append(f"{plan_file.name}: {uc} is not a use case in {uc_file.name}")
+        live = {f"UC-{u.split('-')[1].zfill(2)}" for u, rest in uc_rest.items() if not MARKER.search(rest)}
+        for uc in sorted(live - in_plan):
+            warnings.append(f"{uc} is in no item of {plan_file.name}")
 
     for rid in sorted(removed_now & referenced):
         warnings.append(f"{rid} is marked removed/superseded but is still cited by another document")

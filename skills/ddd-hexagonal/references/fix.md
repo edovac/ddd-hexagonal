@@ -14,7 +14,7 @@ A fix is small on purpose. It changes the code to match a rule that already exis
 
 ## 1. Is it a fix?
 
-1. **Branch check**, as in Build.
+1. **Branch check**, as in Build. Put the fix under "Now" in `docs/plan.md` (build the plan first if the project has none) and start the session task list with the five steps below (`references/progress.md`): the closing step is the one long fixes skip.
 2. **Find the rule** the bug breaks: the open point or expected-failure test that names it, `tools/rule_impact.py <ID>` for a known ID, or the rule text for a reported behaviour. Read the rule, its use cases and its line in the enforcement table.
 3. Decide, and say which in one line before editing:
    - **A rule covers it and the code breaks it** → Fix, continue here.
@@ -50,7 +50,7 @@ Give the query that finds the affected rows, so the user can size the problem. N
 ## 5. Closing and the report
 
 1. Run all checks: unit and integration tests, static analysis, the architecture check (the baseline count must not grow) and `tools/check_traceability.py --docs docs --tests <tests dir>`. A test that failed before the fix and is unrelated to it stays as it was and is reported, not fixed.
-2. Update the documents the fix makes stale, and only those: close the open point (mark it done with the date, or remove it as the functional spec's style has it), and update the rule's line in the enforcement table. The rule text does not change; if it would have to, this was a Change.
+2. Update the documents the fix makes stale, and only those: close the open point (mark it done with the date, or remove it as the functional spec's style has it), and update the rule's line in the enforcement table. The rule text does not change; if it would have to, this was a Change. In `docs/plan.md`, tick the fix with the date, add the follow-ups and clear "Now".
 3. Light documentation review (`references/doc-review.md`) for the touched rule.
 4. Report, then stop; commit only if asked. The block opens the final message; with "detailed" report detail in `CLAUDE.md`, explanations follow it.
 

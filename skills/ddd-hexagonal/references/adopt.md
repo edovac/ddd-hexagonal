@@ -22,9 +22,9 @@ Two things make adoption safe, and every step below protects them:
 
 ## 1. Opening
 
-1. **Branch check**, as in Build. Adopt touches many files; a branch keeps them reviewable.
+1. **Branch check**, as in Build. Adopt touches many files; a branch keeps them reviewable. Start the session task list with this file's sections; on a later run, put the area under "Now" in `docs/plan.md` (on the first run the plan is written in section 2).
 2. Read what exists: `README`, any spec, ADR, wiki export or `CLAUDE.md`, the manifests, the migrations or schema, and the test folders. Detect the language and read its reference file.
-3. If `docs/adoption.md` exists, this is a later run: read it, skip sections 2 and 3, and continue with the area the user names or the next one not adopted.
+3. If `docs/adoption.md` exists, this is a later run: read it and `docs/plan.md`, skip sections 2 and 3, and continue with the area the user names or the next one not ticked in the plan.
 4. **Starting state.** Run the existing test suite once, as it is. Record the result (pass, fail, cannot run and why) with the commit in `docs/adoption.md`. Adopt must leave every test that passed still passing, and it must not try to fix the ones that already failed: they are findings for the report.
 
 ## 2. Map the codebase (first run only)
@@ -40,7 +40,7 @@ The goal is a list of areas small enough to adopt one at a time, not an understa
 
 On a large codebase, run the mapping in parallel: one Explore agent per group of entry points (or per top-level package), each told to return entry points, tables touched and file:line references, not file dumps. Merge their lists yourself.
 
-Write the map into `docs/adoption.md` from `assets/templates/adoption.template.md`, then ask the user to pick the area, with the recommendation first. In the same question, name each module whose place is not obvious (a calculation the area's use cases call that could stand as its own concept, a module another area also uses) with a recommendation: "`fees.py` is used by the return: include it in Lending (recommended), or leave it for a later area". The user fixes the boundary once, before anything is traced, so the candidates, the recap and the questions all follow from the same area.
+Write the map into `docs/adoption.md` from `assets/templates/adoption.template.md`, then ask the user to pick the area, with the recommendation first. In the same question, name each module whose place is not obvious (a calculation the area's use cases call that could stand as its own concept, a module another area also uses) with a recommendation: "`fees.py` is used by the return: include it in Lending (recommended), or leave it for a later area". The user fixes the boundary once, before anything is traced, so the candidates, the recap and the questions all follow from the same area. Then write `docs/plan.md` (`references/progress.md`): the areas in the agreed order under "Adoption", the first one under "Now".
 
 ## 3. Shared documents and tools (first run only)
 
@@ -111,7 +111,8 @@ With the answers in hand:
 3. **`domain-model.md`:** the area's glossary terms, its aggregates as the user describes the business (not as the tables happen to be grouped), and for each aggregate where its rules live today.
 4. **`technical-spec.md`:** the enforcement table gets a line per rule naming every place it is enforced today, so a rule enforced in a controller and in SQL is visible as such.
 5. **Functional spec:** behaviour of the area in plain words with rule IDs; each "code is wrong" answer and each "don't know" as an open point with the rule ID or the evidence.
-6. **`docs/adoption.md`:** remove the area's candidate section; everything in it has now moved to its home or been rejected. Mark the area adopted in the map, with its rule and use case IDs.
+6. **`docs/adoption.md`:** remove the area's candidate section; everything in it has now moved to its home or been rejected. Fill the area's rule and use case IDs in the map.
+7. **`docs/plan.md`:** tick the area with the date, add a Fixes item for each rule the code gets wrong and for each "not testable without changing code", add the report's follow-ups, clear "Now". Status lives here only, so the map in `adoption.md` keeps no status of its own.
 
 ## 7. Tests that pin behaviour
 
@@ -141,7 +142,7 @@ On later runs, re-record the baseline only if the area's mapping changed, and sa
 3. Report, then stop; commit only if asked. The block below opens the final message, so the user and anyone comparing runs find the same facts in the same place; explanations, if the report detail in `CLAUDE.md` is "detailed", follow it, one short paragraph per finding or decision.
 
 ```
-Area: <name>   Areas adopted: <n> of <m> (see docs/adoption.md)
+Area: <name>   Areas adopted: <n> of <m> (see docs/plan.md)
 Rules: confirmed XX-01..XX-nn · code differs from rule: XX-nn (open point) · rejected <n> · unknown <n> (open points)
 Use cases: UC-nn … (Home as found)
 Tests: starting state <pass/fail> → now <pass/fail> · existing tests tagged <n> · added <n> · expected failures XX-nn …
@@ -154,11 +155,11 @@ Next: <the most valuable Fix or Change, and the next area to adopt>
 
 ## 10. A project that is partly adopted
 
-`docs/adoption.md` lists which areas are adopted. Until all are, the other modes apply only to adopted areas:
+`docs/plan.md` shows which areas are adopted and `docs/adoption.md` what each holds. Until all are adopted, the other modes apply only to adopted areas:
 
 - A Build or Change request in an area that is not adopted yet: say so, and offer to adopt that area first (recommended) or to make the change without the workflow's guarantees, recorded as a finding for that area's adoption.
 - A Change that moves adopted code into the target layout is a technical change (`references/change.md` section 4): the area's tests stay green throughout, the moved code's entries leave the baseline, and Home in `use-cases.md` follows the code.
 - A "code differs from rule" open point is fixed with Fix (`references/fix.md`): its expected-failure test, with the marker removed, is the reproduction.
 - Review and Code review read `adoption.md` and skip areas that are not adopted, reporting them as such instead of as gaps.
 
-When the last area is adopted, delete `docs/adoption.md`, after moving its starting state and baseline notes into the technical spec if they still matter.
+When the last area is adopted, delete `docs/adoption.md`, after moving its starting state and baseline notes into the technical spec if they still matter, and remove the "Adoption" section of the plan, keeping its ticked lines under a milestone or as history if the team wants them.

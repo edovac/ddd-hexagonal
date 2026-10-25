@@ -9,6 +9,7 @@
 - @docs/use-cases.md — who does what, step by step; one task = one use case
 - @docs/technical-spec.md — how it is built
 - @docs/domain-model.md — language, bounded contexts, aggregates, ports
+- @docs/plan.md — progress: what is done, in progress and next; every task updates it
 
 The specs are the source of truth. If code and spec disagree, ask before changing either.
 

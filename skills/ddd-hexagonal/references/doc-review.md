@@ -21,6 +21,7 @@ Scope: the use case just finished and the documents it touched.
 - New terms are in the glossary; code names match the glossary.
 - The technical spec's "which service enforces which rule" matches the code.
 - No new decision lives only in code or only in the conversation.
+- `docs/plan.md` matches: the use case is ticked, its follow-ups are listed, "Now" is clear.
 
 ## Deep review (after a milestone)
 
@@ -32,6 +33,7 @@ Read every document in full, in this order, and write down findings before fixin
 4. **Stale text.** Removed features still mentioned, renamed things under their old name, references to sections that moved, dates, table counts.
 5. **Traceability.** Every use case lists rules; every rule that can fail has a code; the language file has a message for each code.
 6. **Architecture drift.** Folder layout in the technical spec matches the code; the architecture check passes; no rule lives outside the domain.
+7. **Plan.** Every ticked use case has its code and passing rule tests; every unticked one has none, or is under "Now"; follow-ups that were done are ticked. Tick this deep review in `docs/plan.md` when its findings are fixed or asked.
 
 ## Reporting and fixing
 

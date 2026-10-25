@@ -74,6 +74,8 @@ Decisions needed from you: <list or none>
 
 Order by severity: personal data in logs, architecture violations and rules outside the domain, then rule logic that contradicts the documents, then missing rule tests, then naming and table drift. If `/code-review` ran, merge its findings into the same ranked list once, dropping duplicates; when it has already shown its own findings, list only what it missed and say how many it reported.
 
+Findings the user chooses to fix later go to `docs/plan.md` as follow-ups, each with its file:line and the report's date, so they are not lost with the conversation.
+
 ## Fixing (`--fix` only)
 
 Without `--fix`, report and stop.
