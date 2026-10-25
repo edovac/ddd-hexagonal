@@ -57,6 +57,18 @@ deptrac:
 
 Domain and Application are not allowed to reach `Vendor`. Extend the regex with each framework or driver in the stack table; avoid backslashes in it, because YAML and Deptrac escape them differently and the check then fails with "Invalid regex pattern". (Verified with Deptrac 2.0: a `use PDO;` in `Domain/` is reported as `DependsOnDisallowedLayer`.) Adapters must not import each other; if a split between driving and driven adapters matters, make them separate layers.
 
+## Existing code: baseline (Adopt)
+
+Only when adopting existing code (`references/adopt.md` section 8). Deptrac writes its own baseline:
+
+```
+vendor/bin/deptrac analyse --formatter=baseline --output=deptrac.baseline.yaml
+```
+
+and `deptrac.yaml` imports it with a top-level `imports: [deptrac.baseline.yaml]`. The file holds `skip_violations` (class → classes it may still depend on). Verified with Deptrac 2.0.6: the listed violation is reported as skipped, a new one fails. The imported file must exist before the first run (write `deptrac: {}` into it), or Deptrac stops. Re-run the formatter after a Change removes violations, and check that the file only shrank.
+
+Expected failure for a rule the code gets wrong: PHPUnit has none. Put the test for the intended rule in a group, `#[Group('known-mismatch')]` with the rule ID in the test name, exclude the group in `phpunit.xml` (`<groups><exclude><group>known-mismatch</group></exclude></groups>`), and run it with `--group known-mismatch` for the report: it should fail until the fix lands.
+
 ## Conventions
 
 - Hours, money and other exact quantities: value objects over integers (hundredths, cents), never floats.

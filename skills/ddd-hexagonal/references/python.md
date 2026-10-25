@@ -73,6 +73,24 @@ forbidden_modules = ["sqlalchemy", "django", "flask", "fastapi", "psycopg", "req
 
 Extend `forbidden_modules` with each library of the stack table. Add an `independence` contract so adapter packages cannot import each other. Verified behaviour: with `import requests` in `domain/` and an application module importing an adapter, `uv run lint-imports` reports both contracts as broken and names the import lines. Indirect chains (application → domain → requests) are reported too, which is usually what you want.
 
+## Existing code: baseline (Adopt)
+
+Only when adopting existing code (`references/adopt.md` section 8). import-linter has no baseline file: list each known violation as an `ignore_imports` entry on the contract it breaks, copied from the `a -> b` lines that `uv run lint-imports` prints.
+
+```toml
+[[tool.importlinter.contracts]]
+name = "Core uses no driver"
+type = "forbidden"
+source_modules = ["myapp.models", "myapp.services"]
+forbidden_modules = ["requests"]
+# Adopt baseline: known violations; the list only shrinks.
+ignore_imports = ["myapp.services.pricing -> requests"]
+```
+
+Use exact module names, never wildcards (`myapp.services.**`): a wildcard also hides the next violation. Verified with import-linter 2.15: the listed import passes, a new one in another module breaks the contract, and an entry that no longer matches fails the run with "No matches for ignored import", so a fixed violation must leave the list.
+
+Expected failure for a rule the code gets wrong: `@pytest.mark.xfail(strict=True, reason="BK-04: code allows 8 h; see open point")`. `strict=True` turns the day the fix lands into a failure, which reminds the Change to remove the marker.
+
 ## Conventions
 
 - Exact quantities: `Decimal` or integer value objects, never `float`. Use frozen dataclasses for value objects.

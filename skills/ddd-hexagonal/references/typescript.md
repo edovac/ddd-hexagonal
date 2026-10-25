@@ -55,6 +55,19 @@ Verified with dependency-cruiser 18 and TypeScript 6: a planted `import fs` in `
 
 **False-pass trap:** dependency-cruiser supports TypeScript below version 7. With TypeScript 7 installed it prints "no dependency violations found (0 modules, 0 dependencies cruised)" and exits 0, so the check silently passes. Pin `typescript@^6` (or whatever range the installed dependency-cruiser supports), and make CI fail if the output reports 0 modules. After setting the check up, plant one violation and confirm it is reported.
 
+## Existing code: baseline (Adopt)
+
+Only when adopting existing code (`references/adopt.md` section 8). dependency-cruiser records known violations itself:
+
+```
+npx depcruise src --config .dependency-cruiser.cjs --output-type baseline --output-to .dependency-cruiser-known-violations.json
+npx depcruise src --config .dependency-cruiser.cjs --ignore-known
+```
+
+The second command is the check for `CLAUDE.md` and CI. Verified with dependency-cruiser 18.7 and TypeScript 6.0: known violations are counted as ignored, a new one exits 1, and a fixed one is reported as stale with the hint to run `--baseline --baseline-mode shrink-only`, which removes it without adding anything.
+
+Expected failure for a rule the code gets wrong: `test.fails('BK-04 …', …)` in Vitest, `test.failing('BK-04 …', …)` in Jest. Both turn red once the code is fixed, which reminds the Change to remove the marker.
+
 ## Conventions
 
 - Exact quantities: integer value objects (cents, hundredths), never `number` arithmetic on decimals.

@@ -57,6 +57,19 @@ Verified with ArchUnit 1.4.1 and JUnit 5.11 on JDK 21 (Maven, in Docker): a plan
 
 **Trap:** without `.withOptionalLayers(true)`, `onionArchitecture()` fails a correct codebase with "Layer 'domain service' is empty" unless you also declare `.domainServices(...)` and have classes there. Keep the option, or declare every layer you really use. Imports needed: `ImportOption`, `AnalyzeClasses`, `ArchTest`, `ArchRule`, `Architectures`, and a static import of `ArchRuleDefinition.noClasses`. ArchUnit's JUnit 5 engine runs the `@ArchTest` fields as ordinary tests, so the normal test task is the gate.
 
+## Existing code: baseline (Adopt)
+
+Only when adopting existing code (`references/adopt.md` section 8). Wrap each rule in `FreezingArchRule.freeze(...)` (static import from `com.tngtech.archunit.library.freeze`):
+
+```java
+@ArchTest
+static final ArchRule layers = freeze(Architectures.onionArchitecture() /* as above */);
+```
+
+and add `src/test/resources/archunit.properties` with `freeze.store.default.allowStoreCreation=true` for the first run only. That run writes `archunit_store/`; commit it, then set the property to `false` so a missing store fails instead of silently recording everything again. Verified with ArchUnit 1.4.1 and JUnit 5.11 (Maven, in Docker): the frozen violation passes, a new one fails, and fixing a frozen violation removes it from the store on the next run.
+
+Expected failure for a rule the code gets wrong: JUnit 5 has none. Tag the test for the intended rule `@Tag("known-mismatch")` with the rule ID in its name, exclude the tag from the normal test task (Surefire `excludedGroups`, Gradle `excludeTags`), and run it on its own for the report: it should fail until the fix lands.
+
 ## Conventions
 
 - Exact quantities: `BigDecimal` with a fixed scale, or integer value objects; Kotlin `data class` or Java `record` for value objects.

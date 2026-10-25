@@ -59,6 +59,6 @@ Rules: <IDs>.
 
 - [ ] <Question, who can answer>
 
-**Rollout** (each step is a milestone for the deep documentation review)
+**Rollout** (each step is a milestone for the deep documentation review; its progress is in `plan.md`)
 
 1. <Step: list of use case IDs>

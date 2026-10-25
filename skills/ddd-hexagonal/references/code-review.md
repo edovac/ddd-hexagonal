@@ -18,7 +18,7 @@ State the target in the first line of the report. Read whole files around each c
 ## Process
 
 1. **Full review, if asked** (`--full`): invoke the `code-review` skill with the same target (and the effort level, if the user gave one) and let it finish first. If it applies fixes or posts comments, that follows its own flags.
-2. **Context.** Read `CLAUDE.md`, the rule IDs and use cases the changed code touches, the matching parts of `domain-model.md`, and the technical spec's stack table, folder layout and "which service enforces which rule" table. If `technical-spec.md` has a "Logging" section that adopts a policy, read `references/logging.md` and the "Personal data" section of `domain-model.md` too; the logging checks below then apply. Find touched rules with `tools/rule_impact.py <IDs>` (or `<skill-dir>/scripts/` when the project has no `tools/` copy) and by the `@rule` tags in changed tests.
+2. **Context.** Read `CLAUDE.md`, the rule IDs and use cases the changed code touches, the matching parts of `domain-model.md`, and the technical spec's stack table, folder layout and "which service enforces which rule" table. If `technical-spec.md` has a "Logging" section that adopts a policy, read `references/logging.md` and the "Personal data" section of `domain-model.md` too; the logging checks below then apply. If `docs/adoption.md` exists and the change is in an area it lists as not adopted, say so in the report and review that part only against the architecture baseline and the stack table, since it has no rules to check against yet. Find touched rules with `tools/rule_impact.py <IDs>` (or `<skill-dir>/scripts/` when the project has no `tools/` copy) and by the `@rule` tags in changed tests.
 3. **Scripts first.** Run the project's architecture check (the command in `CLAUDE.md`; otherwise `check_imports.py` as the language reference describes) and `check_traceability.py --docs docs --tests <tests dir>`. Use the copies in `tools/`; when a script is missing there, run it from `<skill-dir>/scripts/` instead of skipping the check. Report only lines that concern the target, plus any failure that blocks the build. If a check cannot run, say which and why.
 4. **Read** the changed code against the checklist below. Write findings down before fixing anything.
 5. **Report**, then fix only with `--fix` (see Fixing).
@@ -73,6 +73,8 @@ Decisions needed from you: <list or none>
 ```
 
 Order by severity: personal data in logs, architecture violations and rules outside the domain, then rule logic that contradicts the documents, then missing rule tests, then naming and table drift. If `/code-review` ran, merge its findings into the same ranked list once, dropping duplicates; when it has already shown its own findings, list only what it missed and say how many it reported.
+
+Findings the user chooses to fix later go to `docs/plan.md` as follow-ups, each with its `path::symbol` (the report's line number will have moved by then) and the report's date, so they are not lost with the conversation.
 
 ## Fixing (`--fix` only)
 

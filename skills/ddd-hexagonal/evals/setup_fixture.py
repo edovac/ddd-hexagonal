@@ -11,9 +11,13 @@ Fixtures:
     room-booking        documents and scaffold, no use case implemented (eval build-book-room)
     room-booking-uc01   room-booking plus UC-01 implemented, as a second commit (change evals)
     returns-review      documents with planted contradictions, gaps and duplication (eval review-returns-docs)
+    library-legacy      working Flask + PostgreSQL app with no documents, rules scattered (evals adopt-*)
+    library-legacy-adopted  library-legacy after Adopt of the Lending area, as a second commit (eval fix-double-return)
 
 The skill's current scripts are copied into tools/ and the branch guard is installed in
-.claude/, so a fixture never carries stale copies of them.
+.claude/, so a fixture never carries stale copies of them. library-legacy gets neither: it
+stands for a project that has never seen the workflow, and installing them is part of Adopt;
+library-legacy-adopted gets them with its adoption commit.
 """
 import json
 import shutil
@@ -28,11 +32,16 @@ LAYERS = {
     "room-booking": ["room-booking"],
     "room-booking-uc01": ["room-booking", "room-booking-uc01"],
     "returns-review": ["returns-review"],
+    "library-legacy": ["library-legacy"],
+    "library-legacy-adopted": ["library-legacy", "library-legacy-adopted"],
 }
+WITHOUT_TOOLS = {"library-legacy"}
 MESSAGES = {
     "room-booking": "Bootstrap documents and project scaffold",
     "room-booking-uc01": "Implement UC-01 Book a room",
     "returns-review": "Returns desk documents",
+    "library-legacy": "Lending desk 0.3.2",
+    "library-legacy-adopted": "Adopt the Lending area",
 }
 IGNORE = shutil.ignore_patterns(".venv", "__pycache__", "*_cache", ".pytest_cache")
 
@@ -64,10 +73,12 @@ def main() -> int:
     git(dest, "init", "-q", "-b", "main")
     git(dest, "config", "user.name", "Eval Fixture")
     git(dest, "config", "user.email", "fixture@example.test")
-    for i, layer in enumerate(LAYERS[name]):
+    installed = False  # tools go in with the first layer that is not a never-adopted project
+    for layer in LAYERS[name]:
         shutil.copytree(FIXTURES / layer, dest, dirs_exist_ok=True, ignore=IGNORE)
-        if i == 0:
+        if not installed and layer not in WITHOUT_TOOLS:
             install_tools(dest)
+            installed = True
         git(dest, "add", "-A")
         git(dest, "commit", "-q", "-m", MESSAGES[layer])
     print(json.dumps({"fixture": name, "path": str(dest.resolve()), "branch": "main"}))

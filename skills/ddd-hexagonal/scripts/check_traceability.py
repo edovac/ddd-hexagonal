@@ -7,13 +7,19 @@
 Usage:
     uv run check_traceability.py --docs docs [--rules docs/business-rules.md]
                                  [--use-cases docs/use-cases.md] [--tests tests]
-                                 [--strict]
+                                 [--plan docs/plan.md] [--strict]
 
 What it checks
   * Rule IDs used in any document but not defined in the rules file (error).
   * Rules defined but never referenced by a use case or another document (warning).
   * Rules cited in no test file (warning, error with --strict).
   * Use cases that list no rule IDs (warning).
+  * Code cited by line number (src/x.py:42) in a document (warning): lines shift with every
+    edit, so documents cite path::symbol. Adopt's "## Candidates" sections are exempt, since
+    they are deleted when the area closes.
+  * With a plan (docs/plan.md, or --plan): use case IDs it cites that do not exist (error),
+    and live use cases it does not list (warning). The plan does not count as a document
+    that references a rule.
 
 A rule is defined by a table row that starts with its ID, e.g. "| AL-06 | ... |".
 Prefixes are learned from those rows, so ordinary tokens such as SHA-256 are ignored.
@@ -34,6 +40,20 @@ UC_ROW = re.compile(r"^\|\s*(UC-\d{1,3})\s*\|(.*)$", re.M)
 
 ROW = re.compile(r"^\|\s*([A-Z]{2,5}-\d{1,3}|UC-\d{1,3})\s*\|(.*)$", re.M)
 MARKER = re.compile(r"\((removed|superseded)", re.I)
+SKIP_DIRS = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", "node_modules", ".venv", "build", "target"}
+BINARY = {".pyc", ".pyo", ".class", ".png", ".jpg", ".gif", ".pdf", ".zip"}
+LINE_REF = re.compile(r"[\w./-]+\.(?:py|pyi|ts|tsx|js|jsx|php|java|kt|kts|go|rb|cs|sql)(?::\d+(?:[-,]\d+)*)+\b")
+
+
+def line_refs(text: str) -> list[str]:
+    """Code references by line number, outside "## Candidates" sections."""
+    kept, skip = [], False
+    for line in text.splitlines():
+        if line.startswith("## "):
+            skip = line[3:].lower().startswith("candidates")
+        if not skip:
+            kept.extend(LINE_REF.findall(line))
+    return kept
 
 
 def rows(text: str) -> dict[str, str]:
@@ -83,6 +103,7 @@ def main() -> int:
     ap.add_argument("--docs", default="docs")
     ap.add_argument("--rules", default=None)
     ap.add_argument("--use-cases", default=None)
+    ap.add_argument("--plan", default=None, help="progress plan (default docs/plan.md if it exists)")
     ap.add_argument("--tests", default=None)
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--since", default="HEAD", help="git ref to compare IDs against (default HEAD)")
@@ -92,6 +113,7 @@ def main() -> int:
     docs = Path(a.docs)
     rules_file = Path(a.rules) if a.rules else docs / "business-rules.md"
     uc_file = Path(a.use_cases) if a.use_cases else docs / "use-cases.md"
+    plan_file = Path(a.plan) if a.plan else docs / "plan.md"
     if not rules_file.exists():
         print(f"error: rules file not found: {rules_file}")
         return 1
@@ -129,10 +151,15 @@ def main() -> int:
     referenced: set[str] = set()
     for md in sorted(docs.rglob("*.md")):
         text = read(md)
+        refs = line_refs(text)
+        if refs:
+            warnings.append(f"{md.name}: {len(refs)} code reference(s) by line number, e.g. {', '.join(refs[:3])}; cite path::symbol")
         ids = expand(text, prefixes)
         if md.resolve() == rules_file.resolve():
             ids -= {f"{p}-{n.zfill(2)}" for p, n in DEF_ROW.findall(text)}
             ids = {i for i in ids if i not in defined}
+        elif plan_file.exists() and md.resolve() == plan_file.resolve():
+            pass  # progress only: citing a rule in the plan is not a reference to it
         else:
             referenced |= ids
         for i in sorted(ids - defined):
@@ -149,6 +176,16 @@ def main() -> int:
                 warnings.append(f"{uc} lists no rule IDs (write 'none' if that is intended)")
         print(f"{len(use_cases)} use cases")
 
+    if plan_file.exists() and use_cases:
+        plan_text = read(plan_file)
+        in_plan = {f"UC-{n.zfill(2)}" for n in re.findall(r"\bUC-(\d{1,3})\b", plan_text)}
+        known = {f"UC-{u.split('-')[1].zfill(2)}" for u in use_cases}
+        for uc in sorted(in_plan - known):
+            errors.append(f"{plan_file.name}: {uc} is not a use case in {uc_file.name}")
+        live = {f"UC-{u.split('-')[1].zfill(2)}" for u, rest in uc_rest.items() if not MARKER.search(rest)}
+        for uc in sorted(live - in_plan):
+            warnings.append(f"{uc} is in no item of {plan_file.name}")
+
     for rid in sorted(removed_now & referenced):
         warnings.append(f"{rid} is marked removed/superseded but is still cited by another document")
     for r in sorted(defined - referenced - removed_now):
@@ -159,7 +196,10 @@ def main() -> int:
         cited: set[str] = set()
         if tests.exists():
             for f in tests.rglob("*"):
-                if f.is_file() and f.suffix not in {".png", ".jpg", ".gif", ".pdf", ".zip"}:
+                # Compiled and cache files can still hold IDs of tests that were deleted.
+                if any(part in SKIP_DIRS for part in f.parts) or f.suffix in BINARY:
+                    continue
+                if f.is_file():
                     cited |= expand(read(f), prefixes)
         else:
             warnings.append(f"tests folder not found: {tests}")

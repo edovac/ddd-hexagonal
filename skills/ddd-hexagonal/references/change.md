@@ -1,6 +1,6 @@
 # Change procedures
 
-Read the section for the kind of change you are making. All kinds share the opening and the closing steps; the middle differs.
+A bug, where the documents are right and only the code is wrong, is not a change: follow `references/fix.md`. Read the section for the kind of change you are making. All kinds share the opening and the closing steps; the middle differs.
 
 ## Contents
 
@@ -13,7 +13,7 @@ Read the section for the kind of change you are making. All kinds share the open
 
 ## 1. Opening (every change)
 
-1. **Branch check**, as in Build.
+1. **Branch check**, as in Build. Put the change under "Now" in `docs/plan.md` (build the plan first if the project has none) and start the session task list: the opening, the kinds' procedures, the closing.
 2. **Name the kinds.** A request is often more than one kind: "add refunds" is a new use case and new rules, and may be a technical change if it needs a payment provider. Say in one line which kinds you see and in what order you will do them, and wait for a yes before editing. Doing this first prevents choosing the scope by yourself.
 3. **Find the impact** with `scripts/rule_impact.py <IDs>` (or `tools/rule_impact.py`). For a rename or a technical change, also grep for the old word or technology name, because documents and code mention those without citing an ID. Read what the script lists before deciding anything.
 4. **Existing data.** If the change can make stored data invalid (a stricter rule, a changed schema, a removed field), ask the user how to treat it (apply to new data only, migrate, or grandfather) with a recommendation, before editing.
@@ -36,7 +36,7 @@ Order matters because each document refers to the one before it.
 2. **Use case row.** Add `UC-nn` (next free number, never renumber) with actor, main flow, rule IDs and the class that will implement it. For an altered use case, change the row; for a removed one, mark it "(removed)" and keep the number.
 3. **Domain model.** New concepts go in the glossary; new aggregates, value objects or ports only when a rule needs them. Name the aggregate that guarantees each new rule.
 4. **Technical spec.** Add routes, schema changes (as new migrations, never edits of applied ones) and the line saying which service enforces which new rule.
-5. **Functional spec.** Add the behaviour in plain words with the rule IDs, update scope and the rollout milestone if the use case belongs to one.
+5. **Functional spec.** Add the behaviour in plain words with the rule IDs, update scope and the rollout milestone if the use case belongs to one. Add the use case to that milestone in `docs/plan.md`, unticked.
 6. **Implement** with the Build procedure for that use case (test first, adapters only as far as the technical spec calls for). Ask before inventing behaviour the documents do not define.
 
 ## 4. Technical change
@@ -52,6 +52,8 @@ Examples: swapping the database or a library, adding a queue, splitting a contex
 5. **Tooling.** Update the architecture-check configuration (forbidden modules), Docker or CI setup, the integration test setup and the hosting constraints.
 6. **Verify** on the real new technology (start it in Docker), not on a substitute.
 
+**Moving adopted code into the layers** is a technical change too. The tests Adopt added are the net: they stay green at every step. Move one use case at a time, remove its entries from the architecture baseline, update its Home in `use-cases.md` and the enforcement table, and report the baseline count before and after.
+
 ## 5. Rename a term
 
 1. Update the glossary in the domain model first (code term, interface term, meaning, and the old term under "avoid").
@@ -62,7 +64,8 @@ Examples: swapping the database or a library, adding a queue, splitting a contex
 ## 6. Closing (every change) and the report
 
 1. Run the traceability check (including the ID-stability comparison against the last commit), unit and integration tests, static analysis and the architecture check; then the light documentation review.
-2. Report in this form, then stop; commit only if asked:
+2. Update `docs/plan.md` (`references/progress.md`): tick what the change completed, mark removed use cases "(removed)", add the follow-ups, clear "Now".
+3. Report in this form, then stop; commit only if asked:
 
 ```
 Change: <one sentence>   Kinds: rule | use case | technical | rename

@@ -8,6 +8,8 @@ uv run tools/check_traceability.py --docs docs --tests <tests dir>   # or the ru
 
 It reports: rule IDs used but not defined, rules nobody references, rules cited in no test, use cases that list no rules. Fix or explain every line before reading on.
 
+In a project that is partly adopted (`docs/adoption.md` exists), review only the adopted areas. Report the others once, as "not adopted yet", not as gaps; a rule test marked as an expected failure is a known open point, not a missing test.
+
 In the deep review, also compare each script in `tools/` with the one in `<skill-dir>/scripts/` (`diff -q`). If they differ, the project has an older copy or a local edit: show the diff, and ask before replacing it, since a local edit may be deliberate.
 
 ## Light review (after a use case)
@@ -19,6 +21,7 @@ Scope: the use case just finished and the documents it touched.
 - New terms are in the glossary; code names match the glossary.
 - The technical spec's "which service enforces which rule" matches the code.
 - No new decision lives only in code or only in the conversation.
+- `docs/plan.md` matches: the use case is ticked, its follow-ups are listed, "Now" is clear.
 
 ## Deep review (after a milestone)
 
@@ -30,6 +33,7 @@ Read every document in full, in this order, and write down findings before fixin
 4. **Stale text.** Removed features still mentioned, renamed things under their old name, references to sections that moved, dates, table counts.
 5. **Traceability.** Every use case lists rules; every rule that can fail has a code; the language file has a message for each code.
 6. **Architecture drift.** Folder layout in the technical spec matches the code; the architecture check passes; no rule lives outside the domain.
+7. **Plan.** Every ticked use case has its code and passing rule tests; every unticked one has none, or is under "Now"; follow-ups that were done are ticked. Tick this deep review in `docs/plan.md` when its findings are fixed or asked.
 
 ## Reporting and fixing
 

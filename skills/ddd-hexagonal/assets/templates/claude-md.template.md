@@ -9,6 +9,7 @@
 - @docs/use-cases.md — who does what, step by step; one task = one use case
 - @docs/technical-spec.md — how it is built
 - @docs/domain-model.md — language, bounded contexts, aggregates, ports
+- @docs/plan.md — progress: what is done, in progress and next; every task updates it
 
 The specs are the source of truth. If code and spec disagree, ask before changing either.
 
@@ -27,6 +28,7 @@ Hosting limits, stack, conventions and testing rules are in `technical-spec.md`.
 
 - Test first for domain and service code. Integration tests run against the real database.
 - Commands: unit `<cmd>` · integration `<cmd>` · static analysis `<cmd>` · architecture `<cmd>` · traceability `<uv run | python3> tools/check_traceability.py --docs docs --tests <tests dir>`
+- Reports: <concise | detailed>. Concise is the mode's report block and the decisions needed; detailed adds a short explanation per finding.
 - Before calling a task done: run all of them and report the real result, including failures; give the rule and use-case IDs touched, the test covering each, and any gap or mismatch. If code and spec disagree, ask before changing either.
 
 ## Logging
@@ -35,6 +37,6 @@ Hosting limits, stack, conventions and testing rules are in `technical-spec.md`.
 
 ## Git and dependencies
 
-- Before changing code, check the current branch. If it is the main branch, propose a new branch name and ask before creating it. Never commit to the main branch.
+- Before changing code, check the current branch. If it is the main branch, propose a new branch name and ask before creating it: <the project's convention, or `<mode>/<short-slug>`, e.g. `change/booking-limits`>. Never commit to the main branch.
 - Commit only when asked. Commit messages are in English.
 - A dependency not listed in the technical spec's Stack table needs the user's approval first; once approved, add it to that table.
