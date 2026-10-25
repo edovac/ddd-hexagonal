@@ -26,6 +26,7 @@ IDs are stable: a tightened or relaxed rule keeps its ID. A rule whose meaning c
 1. Edit `business-rules.md` first, including the error-code column; update the translation file if a code changes.
 2. In use cases, domain model and technical spec, change only the IDs they cite or the enforcement they describe. If the old value (a number, a role) appears outside the rules file, replace it with the ID. Do not keep the old value as a history note in any document: git holds the history, and the reason for the change goes in the technical spec's "Decisions". A document that shows two values for one rule is a contradiction waiting to happen.
 3. Tests first: change tests that encode the old behaviour on purpose (never delete a failing test to turn it green), add tests for the new boundary with `@rule`, watch them fail, then change the code. The value lives in one place in the domain.
+4. **Stored data under the new rule.** When a rule gets stricter, data saved under the old one now breaks it. Find where the code rebuilds domain objects from stored rows (repositories, mappers): if the rule is checked when an object is constructed, a stored value that now breaks the rule fails to load, and anything built on it (an overlap check, a count, a report) fails with the wrong error or not at all. Apply the rule where new data enters, not where stored data is read. Then add a test that stores a value valid under the old rule only, and shows it still loads and still counts wherever the other rules need it.
 
 ## 3. Use case change
 

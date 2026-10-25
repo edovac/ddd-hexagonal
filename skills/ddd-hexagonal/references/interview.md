@@ -25,4 +25,5 @@ When the answer is unknown or depends on someone else, record it as an open poin
 - Use realistic examples from the user's domain instead of abstractions.
 - When two answers conflict, stop and resolve it before writing.
 - Never fill a gap with a guess; write it as an open point or ask.
+- A value that depends on an open answer (the country, and with it VAT rates, retention periods, number formats, legal wording) stays out of the rules. Write the rule neutrally ("kept for the legal retention period") and put the value in configuration or an open point naming who decides.
 - Keep a running list of terms to put in the glossary and ask when two words seem to mean the same thing.

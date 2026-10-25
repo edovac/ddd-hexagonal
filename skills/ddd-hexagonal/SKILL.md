@@ -27,7 +27,7 @@ If the project has some documents but not the set below, say what is missing and
 
 These hold in every project. The reason is given so you can apply them with judgement in cases they do not literally cover.
 
-1. **Rule IDs and traceability.** Every business rule has a stable ID (`AL-06`) in one table. Tests cite the IDs they cover (`@rule AL-06`), and a rule with no test is reported as a gap. IDs let a test, a use case and a conversation point at the same sentence without breaking when headings change.
+1. **Rule IDs and traceability.** Every business rule has a stable ID (`AL-06`) in one table. Tests cite the IDs they cover (`@rule AL-06`), and a rule with no test is reported as a gap. A tag claims the test checks the rule's whole sentence, so a test that exercises only part of it (the count but not the cap) or only passes through it (a happy path) is tagged with what it really checks. IDs let a test, a use case and a conversation point at the same sentence without breaking when headings change.
 2. **One fact, one home.** Each fact is stated in exactly one document; the others link to it. Duplicates drift apart and then contradict each other. Before writing anything down, check whether another document already holds it.
 3. **Test first for domain code.** In the domain and service layers write the failing unit test, then the code. Adapters get integration tests against the real technology (the real database, not a lookalike), because mocks and substitutes hide the differences that cause production bugs.
 4. **Ask before adding a dependency.** Anything not in the technical spec's stack table needs the user's approval; once approved it goes into the table. Dependencies are long-term commitments the user must own.

@@ -38,7 +38,7 @@ State the target in the first line of the report. Read whole files around each c
 ### Traceability
 
 - Every changed or added piece of rule logic has a test citing its rule ID (`@rule AL-06`, tagged per the language reference).
-- Tests cite only IDs that exist; changed tests still test what their tag claims.
+- Tests cite only IDs that exist; changed tests still test what their tag claims. Read each tagged test against the rule text: a tag on a test that checks only part of the rule, or only a successful path, overstates coverage and is a finding, because the traceability script counts the tag as proof.
 - A new use case class is listed in `use-cases.md` with its rule IDs; the technical spec's enforcement table names the class that now enforces each touched rule.
 
 ### Code matches the documents
