@@ -938,6 +938,21 @@ def _(ctx):
     return (None if not open_still else False), f"open point line: {line.strip()[:90] or 'gone'}; enforcement: {enf[:120]}"
 
 
+LINE_REF = re.compile(r"[\w./-]+\.(?:py|sql|ts|php|java|kt)(?::\d+(?:[-,]\d+)*)+\b")
+
+
+@check("fix-double-return", "Document lines the fix added or changed cite the code it changed")
+def _(ctx):
+    rc, diff = ctx.git("diff", "-U0", "HEAD", "--", "docs")
+    rc2, changed = ctx.git("diff", "--name-only", "HEAD", "--", "src", "migrations")
+    changed_files = {c.strip() for c in changed.splitlines() if c.strip()}
+    added = [l[1:] for l in diff.splitlines() if l.startswith("+") and not l.startswith("+++")]
+    with_lines = [m.group(0) for l in added for m in LINE_REF.finditer(l) if m.group(0).split(":")[0] in changed_files]
+    row = rule_row(ctx.read("docs/technical-spec.md"), "LN-12")
+    row_ok = "::" in row and not LINE_REF.search(row)
+    return (not with_lines and row_ok), f"line references to changed code in added doc lines: {with_lines[:4] or 'none'}; LN-12 row: {row[:110]}"
+
+
 @check("fix-double-return", "The architecture check and the traceability check pass")
 def _(ctx):
     rc, out = ctx.tool("lint-imports", ["uv", "run", "lint-imports"])

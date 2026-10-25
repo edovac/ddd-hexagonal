@@ -132,7 +132,7 @@ Follow `references/fix.md`.
 2. Reproduce with a failing test that cites the rule; an expected-failure test from Adopt is the reproduction once its marker is removed.
 3. If stored data may be affected, ask how to treat it, with the query that finds it, before editing.
 4. Make the smallest change in the place the enforcement table names; no moving or tidying on the way.
-5. Run all checks, close the open point, update the enforcement line, tick the fix in `docs/plan.md`, give the fix report and stop.
+5. Run all checks, close the open point, update the enforcement row, tick the fix in `docs/plan.md`, give the fix report and stop.
 
 ## Review
 
@@ -150,5 +150,6 @@ Domain at the centre, then application services, then adapters; dependencies poi
 
 - Track progress in two places (`references/progress.md`): `docs/plan.md` for the project, kept current by every mode, and a session task list with the mode's steps for Adopt, Build, Change and Fix, so the last steps (review, plan, report) are not skipped. If `docs/plan.md` is missing in a project with documents, build it from them first.
 - Keep documents short: tables and bullets over prose, a pointer over a copy.
+- In the documents, cite code by `path::symbol` (`src/library/loans.py::give_back`; for the schema, the migration and the constraint or index name), never by line number: every edit shifts lines, so a line reference is wrong after the next change. Line numbers belong in what is read at once: reports, the conversation, and Adopt's candidate tables, which are deleted when the area closes.
 - Ask decisions as questions with a recommendation, one topic at a time; apply the answer to every document it touches, then check that no other document repeats it.
 - Use the user's language for conversation and the ubiquitous language for names in code.

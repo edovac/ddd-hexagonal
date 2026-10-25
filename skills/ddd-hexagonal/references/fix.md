@@ -50,7 +50,7 @@ Give the query that finds the affected rows, so the user can size the problem. N
 ## 5. Closing and the report
 
 1. Run all checks: unit and integration tests, static analysis, the architecture check (the baseline count must not grow) and `tools/check_traceability.py --docs docs --tests <tests dir>`. A test that failed before the fix and is unrelated to it stays as it was and is reported, not fixed.
-2. Update the documents the fix makes stale, and only those: close the open point (mark it done with the date, or remove it as the functional spec's style has it), and update the rule's line in the enforcement table. The rule text does not change; if it would have to, this was a Change. In `docs/plan.md`, tick the fix with the date, add the follow-ups and clear "Now".
+2. Update the documents the fix makes stale, and only those. A document that cites the changed code by line number is stale now: replace those citations with `path::symbol` (SKILL.md, "Style of work"), and leave line citations elsewhere to the follow-up the traceability check suggests. Then close the open point (mark it done with the date, or remove it as the functional spec's style has it), and update the rule's row in the enforcement table. The rule text does not change; if it would have to, this was a Change. In `docs/plan.md`, tick the fix with the date, add the follow-ups and clear "Now".
 3. Light documentation review (`references/doc-review.md`) for the touched rule.
 4. Report, then stop; commit only if asked. The block opens the final message; with "detailed" report detail in `CLAUDE.md`, explanations follow it.
 

@@ -75,6 +75,8 @@ For each one, add a row to the area's candidate table in `docs/adoption.md`:
 
 Also add, per entry point, a use case candidate (actor, action, entry point, the candidates it applies), and a terms list: the nouns the code uses (class, table and route names) next to the words the user's interface uses.
 
+Candidates and findings cite `file:line`, because the user confirms them now and the section is deleted when the area closes. What moves into the lasting documents and into the map's notes cites `path::symbol` instead (section 6).
+
 Record **findings** separately: the same check with different values in two places, a check on one path and not on another that should share it, a rule enforced only in the interface, a calculation on floats for money, dead code that still enforces something. These are questions, not fixes.
 
 Read every evidence line yourself before writing it down. If Explore agents traced the entry points, treat their output as leads to verify: a wrong line reference turns into a wrong rule.
@@ -109,7 +111,7 @@ With the answers in hand:
 1. **`business-rules.md`:** one area section with its prefix; each confirmed rule gets an ID. The Code column holds the code the check returns today if it returns one. If it returns only a sentence or an exception class, propose an English code and list "no error code yet" under the area's gaps; changing what the code returns is a Change.
 2. **`use-cases.md`:** one row per confirmed use case, with its rule IDs. Home is where the code lives today (`app/views/bookings.py::create_booking`), even when that is a controller; it moves when the code moves.
 3. **`domain-model.md`:** the area's glossary terms, its aggregates as the user describes the business (not as the tables happen to be grouped), and for each aggregate where its rules live today.
-4. **`technical-spec.md`:** the enforcement table gets a line per rule naming every place it is enforced today, so a rule enforced in a controller and in SQL is visible as such.
+4. **`technical-spec.md`:** the enforcement table gets a row per rule naming every place it is enforced today, by `path::symbol` (the `file:line` evidence of the candidates does not carry over, since the next edit would shift it), so a rule enforced in a controller and in SQL is visible as such.
 5. **Functional spec:** behaviour of the area in plain words with rule IDs; each "code is wrong" answer and each "don't know" as an open point with the rule ID or the evidence.
 6. **`docs/adoption.md`:** remove the area's candidate section; everything in it has now moved to its home or been rejected. Fill the area's rule and use case IDs in the map.
 7. **`docs/plan.md`:** tick the area with the date, add a Fixes item for each rule the code gets wrong and for each "not testable without changing code", add the report's follow-ups, clear "Now". Status lives here only, so the map in `adoption.md` keeps no status of its own.

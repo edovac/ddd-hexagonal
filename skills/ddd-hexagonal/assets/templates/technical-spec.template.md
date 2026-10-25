@@ -39,7 +39,7 @@ A dependency not listed here needs the user's approval before use.
 
 ## Business logic
 
-Which component enforces which rules and how. No rule text.
+Which component enforces which rules and how, citing code as `path::symbol`, never by line number. No rule text.
 
 ### <Service>
 

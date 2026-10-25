@@ -201,6 +201,7 @@
         "Only loans.py and web.py changed under src/, with no module moved, renamed or added",
         "Tests other than test_fee_is_capped pass against the real PostgreSQL database, and test_fee_is_capped is unchanged",
         "The LN-12 open point is closed and the enforcement table names where LN-12 is now enforced",
+        "Document lines the fix added or changed cite the code it changed by path::symbol, with no line numbers, and the LN-12 enforcement row names the function",
         "The architecture check and the traceability check pass",
         "A fix report in the skill's format opens the final message",
         "In docs/plan.md the LN-12 fix is ticked with a date, \"Now\" is clear, and the report's follow-ups are added",

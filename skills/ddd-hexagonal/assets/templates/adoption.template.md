@@ -43,5 +43,5 @@ Status and order are in `plan.md`.
 
 ### Findings
 
-- <Same check with different values: `a.py:12` allows 3, `b.py:40` allows 5.>
+- <Same check with different values: `a.py:12` allows 3, `b.py:40` allows 5.> (line numbers are fine here: this section is deleted when the area closes)
 - <A rule enforced only in the interface: `templates/x.html:8`.>

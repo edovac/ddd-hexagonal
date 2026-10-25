@@ -14,6 +14,9 @@ What it checks
   * Rules defined but never referenced by a use case or another document (warning).
   * Rules cited in no test file (warning, error with --strict).
   * Use cases that list no rule IDs (warning).
+  * Code cited by line number (src/x.py:42) in a document (warning): lines shift with every
+    edit, so documents cite path::symbol. Adopt's "## Candidates" sections are exempt, since
+    they are deleted when the area closes.
   * With a plan (docs/plan.md, or --plan): use case IDs it cites that do not exist (error),
     and live use cases it does not list (warning). The plan does not count as a document
     that references a rule.
@@ -37,6 +40,18 @@ UC_ROW = re.compile(r"^\|\s*(UC-\d{1,3})\s*\|(.*)$", re.M)
 
 ROW = re.compile(r"^\|\s*([A-Z]{2,5}-\d{1,3}|UC-\d{1,3})\s*\|(.*)$", re.M)
 MARKER = re.compile(r"\((removed|superseded)", re.I)
+LINE_REF = re.compile(r"[\w./-]+\.(?:py|pyi|ts|tsx|js|jsx|php|java|kt|kts|go|rb|cs|sql)(?::\d+(?:[-,]\d+)*)+\b")
+
+
+def line_refs(text: str) -> list[str]:
+    """Code references by line number, outside "## Candidates" sections."""
+    kept, skip = [], False
+    for line in text.splitlines():
+        if line.startswith("## "):
+            skip = line[3:].lower().startswith("candidates")
+        if not skip:
+            kept.extend(LINE_REF.findall(line))
+    return kept
 
 
 def rows(text: str) -> dict[str, str]:
@@ -134,6 +149,9 @@ def main() -> int:
     referenced: set[str] = set()
     for md in sorted(docs.rglob("*.md")):
         text = read(md)
+        refs = line_refs(text)
+        if refs:
+            warnings.append(f"{md.name}: {len(refs)} code reference(s) by line number, e.g. {', '.join(refs[:3])}; cite path::symbol")
         ids = expand(text, prefixes)
         if md.resolve() == rules_file.resolve():
             ids -= {f"{p}-{n.zfill(2)}" for p, n in DEF_ROW.findall(text)}
