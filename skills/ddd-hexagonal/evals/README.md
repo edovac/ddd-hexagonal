@@ -29,5 +29,14 @@ The output has `decided` (pass or fail with evidence), `needs_judgment` (asserti
 
 - Checks are tied to assertions by the start of their text. When you reword an assertion in `evals.json`, the script stops with an error naming the check to update.
 - `DATABASE_URL` must follow the project's own convention. The change-db-swap runs refuse any database name that does not end in `_test`. A fixture that cannot set up is reported as needing judgment, not as a failure.
+- `run_grading.py` runs the script over a whole iteration folder (`eval-*/<configuration>/run-*/`) and writes `mechanical.json` beside each run, creating one database per run:
+
+  ```
+  uv run evals/run_grading.py <iteration> --db-suffix _i2 \
+      --pg-url 'postgresql://postgres:test@localhost:5433/{db}' --pg-container <postgres container> \
+      --mysql-url 'mysql://root:test@127.0.0.1:3306/{db}' --mysql-container <mysql container>
+  ```
+
+  The twelve runs of an iteration take about 30 seconds.
 - Validated against 12 iteration-2 runs: it decided 66 of 130 assertion-runs and agreed with the agent graders on all 66.
 - To compare a new skill version with the 0.3.0 baseline, keep the baseline projects and grade them again with the script when assertions change, instead of re-running them.
