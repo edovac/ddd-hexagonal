@@ -43,7 +43,7 @@ Ask once at Bootstrap (or the first Adopt run) and record the answers in the pro
 - Before changing code, check the branch. On the main branch, propose a new branch and ask before creating it: follow the project's own naming convention if it has one, otherwise suggest `<mode>/<short-slug>` (`adopt/lending`, `change/booking-limits`), so the branch says which kind of work it holds. It is a suggestion the user may change, not a rule. Review, and Code review without `--fix`, change no code and need no branch. Commit only when asked.
 - Tests: unit tests for rules, integration tests against the real database, no coverage percentage, deploy or CI stops on a failing test, static analysis or architecture check.
 - Hexagonal-lite: ports only at real seams (see `references/architecture.md`).
-- Reports: concise (the mode's fixed report block and the decisions needed) or detailed (the block, then a short explanation of each finding and decision). Default concise; the user can ask for the other form at any time, for one report or from then on.
+- Reports: concise (the mode's fixed report block and the decisions needed) or detailed (the block, then a short explanation of each finding and decision). Default concise; the user can ask for the other form at any time, for one report or from then on. In every report block, a field with more than one item (coverage, gaps, documents changed, decisions) puts each item on its own indented line, so nothing runs off the screen and each item can be answered on its own.
 - Logging: never assume it. Ask the developer explicitly whether to adopt `references/logging.md` (one DEBUG on entry and one INFO on completion per adapter call and use case, no personal data in logs), adapt it, or leave logging out.
 
 ## The document set
