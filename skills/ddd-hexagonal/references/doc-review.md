@@ -26,7 +26,7 @@ Read every document in full, in this order, and write down findings before fixin
 
 1. **Contradictions.** Same fact stated differently (limits, formats, which roles may do what, which rule applies when). Cross-check the routes/permissions table against the roles and rule IDs, the schema against the rules (constraints, nullable fields), exports and report formats against the functional text, and open points against decisions already made elsewhere.
 2. **Gaps.** Behaviour the rules do not define: what happens at the edges of dates and limits, when referenced data changes after use, on deletion or deactivation, with concurrent edits, after unlock or correction, on retention or erasure, when a calculation names something not eligible.
-3. **Duplication.** A fact with two homes. Replace the copy with a pointer to the home.
+3. **Duplication.** A fact with two homes. Replace the copy with a pointer to the home, but only when both say the same thing. If they differ in any detail (a value, a condition, where or whether a check happens), it is a contradiction: report it and ask which is right, because merging would silently pick one meaning.
 4. **Stale text.** Removed features still mentioned, renamed things under their old name, references to sections that moved, dates, table counts.
 5. **Traceability.** Every use case lists rules; every rule that can fail has a code; the language file has a message for each code.
 6. **Architecture drift.** Folder layout in the technical spec matches the code; the architecture check passes; no rule lives outside the domain.

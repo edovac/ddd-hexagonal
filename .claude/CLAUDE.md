@@ -17,6 +17,17 @@ This repository is a Claude Code plugin and its own marketplace (`ev-coding`). T
 - Python scripts run with uv (`uv run`), never pip or venv.
 - Keep the `SKILL.md` description under 1024 characters (Agent Skills limit).
 
+## Evals
+
+Evals live in `skills/ddd-hexagonal/evals/` (`README.md` has the details). They cost mostly agent tokens, so:
+
+- Make each run's project with `evals/setup_fixture.py`, one folder per run laid out as `<iteration>/eval-<name>/<with_skill|old_skill>/run-1/`, with `outputs/` beside the project.
+- Grade with code first: `uv run evals/run_grading.py <iteration> --db-suffix <s> --pg-url ... --mysql-url ...` writes `mechanical.json` into every run. Give a grader agent that file and have it grade only `needs_judgment`; never ask an agent to re-run tests, greps or git comparisons the script already did.
+- Keep the 0.3.0 baseline projects and re-grade them with the script when assertions change; do not re-run the baseline for that.
+- Run only the evals a change affects (change guidance: the three change evals; review guidance: review-returns-docs; interview or templates: bootstrap-invoicing). The full set, including bootstrap and db-swap, is for before a release.
+- When an assertion in `evals.json` is reworded, update its check in `grade_mechanical.py`; the script stops with an error naming it.
+- Runs are single samples: the same eval has flipped between iterations. Treat differences of one or two assertions as noise.
+
 ## Release
 
 1. Bump `version` in `.claude-plugin/plugin.json` (semver: patch for fixes, minor for new modes or checks).

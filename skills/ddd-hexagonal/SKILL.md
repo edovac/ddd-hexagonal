@@ -14,18 +14,20 @@ Look at the project first, then choose:
 | Situation | Mode |
 | --- | --- |
 | No business rules document, or a new project | **Bootstrap**: interview, then write the documents |
-| Documents exist and the user asks for a feature, rule or use case | **Build**: one use case at a time |
-| A new feature or use case, a changed or dropped rule ("it's 4 hours now"), a technology swap, or a rename | **Change**: name the kinds, impact analysis, then documents, tests, code |
+| The user asks to implement a use case that `use-cases.md` already lists | **Build**: one use case at a time |
+| Something the documents do not hold yet, or hold differently: a new feature or use case, a changed or dropped rule ("it's 4 hours now"), a technology swap, or a rename | **Change**: name the kinds, impact analysis, then documents, tests, code |
 | A use case or milestone is finished, or the user asks for a check | **Review**: documentation and traceability |
 | The user asks to review code, a diff, a branch or a PR in a project with these documents | **Code review**: architecture, traceability, code against the documents |
 
-If the project has some documents but not the set below, say what is missing and offer to Bootstrap the missing parts only. Detect the language from manifests (`composer.json`, `package.json` or `tsconfig.json`, `pyproject.toml` or `requirements.txt`, `pom.xml` or `build.gradle*`) and read the matching file in `references/` (`php.md`, `typescript.md`, `python.md`, `java-kotlin.md`). For any other language read `references/new-language.md` and offer to create the reference file.
+Build and Change are told apart by `use-cases.md`: a request it already covers is Build; anything it does not cover yet is Change, which updates the documents first and then builds through the Build steps.
+
+If the project has some documents but not the set below, say what is missing and offer to Bootstrap the missing parts only. Detect the language from manifests (`composer.json`, `package.json` or `tsconfig.json`, `pyproject.toml` or `requirements.txt`, `pom.xml` or `build.gradle*`) and read the matching file in `references/` (`php.md`, `typescript.md`, `python.md`, `java-kotlin.md`). For any other language, use the project's `.claude/ddd-hexagonal/<language>.md` if it exists; otherwise read `references/new-language.md` and offer to create it.
 
 ## Non-negotiable practices
 
 These hold in every project. The reason is given so you can apply them with judgement in cases they do not literally cover.
 
-1. **Rule IDs and traceability.** Every business rule has a stable ID (`AL-06`) in one table. Tests cite the IDs they cover (`@rule AL-06`), and a rule with no test is reported as a gap. IDs let a test, a use case and a conversation point at the same sentence without breaking when headings change.
+1. **Rule IDs and traceability.** Every business rule has a stable ID (`AL-06`) in one table. Tests cite the IDs they cover (`@rule AL-06`), and a rule with no test is reported as a gap. A tag claims the test checks the rule's whole sentence, so a test that exercises only part of it (the count but not the cap) or only passes through it (a happy path) is tagged with what it really checks. IDs let a test, a use case and a conversation point at the same sentence without breaking when headings change.
 2. **One fact, one home.** Each fact is stated in exactly one document; the others link to it. Duplicates drift apart and then contradict each other. Before writing anything down, check whether another document already holds it.
 3. **Test first for domain code.** In the domain and service layers write the failing unit test, then the code. Adapters get integration tests against the real technology (the real database, not a lookalike), because mocks and substitutes hide the differences that cause production bugs.
 4. **Ask before adding a dependency.** Anything not in the technical spec's stack table needs the user's approval; once approved it goes into the table. Dependencies are long-term commitments the user must own.
@@ -71,7 +73,11 @@ A task is one use case from `use-cases.md`. For each:
 2. **Read** the use case, every rule ID it lists, and the matching parts of the domain model and technical spec. If something is missing or contradictory, ask before coding.
 3. **Plan** the files per layer in two or three lines: domain objects, services, application class, ports, adapters, tests. Say where each rule will be enforced.
 4. **Test first** for the domain and service code: write the failing unit test with its `@rule` tags, watch it fail, make it pass.
-5. **Implement** the application class and the ports it needs. Dependencies point inward only (`references/architecture.md`). Business rules never go into controllers, templates, SQL reports or adapters. Build only what the use case and the technical spec call for: a driven adapter (for example the database repository) when the use case must persist, a driving adapter (HTTP route) only when the technical spec lists one for this use case. Do not invent endpoints, authentication placeholders or other behaviour the documents do not define; record each such gap as an open point or a question. If the project adopted a logging policy, each new adapter call and use case logs as `references/logging.md` says, and never with personal data.
+5. **Implement** the application class and the ports it needs.
+   - Dependencies point inward only (`references/architecture.md`). Business rules never go into controllers, templates, SQL reports or adapters.
+   - Build only what the use case and the technical spec call for: a driven adapter (for example the database repository) when the use case must persist, a driving adapter (HTTP route) only when the technical spec lists one for this use case.
+   - Do not invent endpoints, authentication placeholders or other behaviour the documents do not define; record each such gap as an open point or a question.
+   - If the project adopted a logging policy, each new adapter call and use case logs as `references/logging.md` says, and never with personal data.
 6. **Integration tests** for each new adapter and for the use case end to end, against the real database.
 7. **Run** the unit tests, integration tests, static analysis and the architecture check. Report real results, including failures; never mark a task done on a red run. If a check cannot run here, say which and why; a real database can usually be started in Docker.
 8. **Verify against the specs** and write the report below.

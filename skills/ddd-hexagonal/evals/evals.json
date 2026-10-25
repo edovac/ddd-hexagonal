@@ -15,32 +15,40 @@
         "No application source code was written beyond folder placeholders and configuration",
         "CLAUDE.md contains the branch rule, the ask-before-adding-dependency rule, test-first for domain code, and pointers to the documents",
         "Technical spec names pytest and an architecture check such as import-linter and a domain/application/adapters layout",
-        "Facts the user did not give (VAT rates, currencies, numbering) are recorded as open points or as questions, not silently invented",
-        "No rule sentence is repeated verbatim in two documents",
-        "Domain model has a ubiquitous language table and a ports table"
+        "Facts the user did not give (VAT rates, currencies, numbering) are recorded as open points or as questions, not silently invented, and no rule fixes a jurisdiction-dependent detail (country, VAT rates, VAT-number format, retention period) while jurisdiction is still open",
+        "No rule is restated in another document, verbatim or reworded; other documents cite its ID",
+        "Domain model has a ubiquitous language table and a ports table",
+        "The branch guard hook is installed in .claude/ and refuses a commit on main"
       ]
     },
     {
       "id": 2,
       "name": "build-book-room",
       "prompt": "In this project, implement UC-01 Book a room, following the project's documents.",
-      "expected_output": "Domain and application code for UC-01 with unit tests citing BK-01 to BK-04, a BookingRepository port with an in-memory fake, no framework imports in the domain, work not committed on main, and an end-of-task report.",
+      "expected_output": "Domain and application code for UC-01 with unit tests citing RM-01 and BK-01 to BK-05, a BookingRepository port with an in-memory fake, a PostgreSQL repository with integration tests, no framework imports in the domain, no HTTP route (the technical spec defines none), work not committed on main, and an end-of-task report.",
       "files": [
-        "fixtures/room-booking"
+        "evals/fixtures/room-booking"
       ],
       "assertions": [
         "Work is not done on main without a branch: a feature branch exists or a branch name was proposed, and nothing was committed",
-        "Unit tests exist for BK-01, BK-02, BK-03 and BK-04 and each test names its rule with an @rule tag",
+        "Unit tests exist for RM-01, BK-01, BK-02, BK-03, BK-04 and BK-05 and each test names its rule with an @rule tag",
         "Test files were created before the implementation files (file modification times or transcript)",
         "The unit tests pass when run",
         "The domain package imports no web framework or database driver",
         "A BookingRepository port is defined in the application layer and unit tests use an in-memory fake",
         "A test covers the boundary where one booking ends exactly when another starts",
+        "A test covers a booking of exactly 8 hours being allowed (BK-04 boundary)",
         "The final report lists rule IDs touched, the test for each, check results and gaps",
         "The report states honestly which checks were run and which were not (integration tests, mypy, import-linter)",
+        "No HTTP route or web framework was added, since the technical spec defines no driving adapter for milestone 1",
         "No dependency outside the technical spec stack was added without a recorded question",
-        "Documents were not changed without a recorded question"
-      ]
+        "Documents were changed only in the ways the skill allows without asking (an open point, an approved stack row, folder layout or enforcement table matching new code); any other change has a recorded question",
+        "The domain layer calls no platform clock or randomness (datetime.now, uuid4, random); IDs and time come through ports or parameters",
+        "A test runs two concurrent overlapping booking requests against PostgreSQL and shows that only one succeeds",
+        "Every test tagged with a rule ID exercises that rule's behaviour, not only a related query or a part of the rule",
+        "No UC-02 (cancel) behaviour was implemented"
+      ],
+      "setup": "uv run evals/setup_fixture.py room-booking <project dir>"
     },
     {
       "id": 3,
@@ -48,7 +56,7 @@
       "prompt": "Our returns desk docs have grown over time and I think they're out of sync. Review them and tell me what's wrong.",
       "expected_output": "A report that finds the planted problems, groups them as contradictions, gaps and duplication, runs or mirrors the traceability check, and asks the user to decide instead of silently rewriting rules.",
       "files": [
-        "fixtures/returns-review"
+        "evals/fixtures/returns-review"
       ],
       "assertions": [
         "Finds the 14-day versus 30-day return window contradiction",
@@ -59,9 +67,12 @@
         "Finds the gift cards contradiction between behaviour and scope",
         "Notes that only RT-02 has a test",
         "Used the traceability script or an equivalent check of IDs",
-        "Did not silently change rules: decisions are asked as questions with a recommendation",
-        "Findings are grouped as contradictions, gaps and duplication or stale text"
-      ]
+        "Did not change the meaning of a rule, rule reference or check without asking: only edits with one possible reading (a pointer replacing a copy that says the same thing, a route role aligned with RT-04) are applied directly; everything else is asked as a question with a recommendation",
+        "Findings are grouped as contradictions, gaps and duplication or stale text",
+        "The RefundCalculator text is reported as a contradiction about where RT-03 is checked, not only as duplication",
+        "Work happened on a branch and nothing was committed on main"
+      ],
+      "setup": "uv run evals/setup_fixture.py returns-review <project dir>"
     },
     {
       "id": 4,
@@ -69,16 +80,20 @@
       "prompt": "The requirements changed: a member can now hold at most 2 upcoming bookings (it was 3), and a single booking can last at most 4 hours (it was 8). Please update the requirements and the code.",
       "expected_output": "Rules BK-01 and BK-04 tightened with the same IDs, no old values left anywhere, tests moved to the new boundaries, a question about existing bookings, and a change report.",
       "files": [
-        "fixtures/room-booking (after UC-01 is implemented)"
+        "evals/fixtures/room-booking-uc01"
       ],
       "assertions": [
-        "Both rules keep their IDs and the old numbers are gone from documents and code",
+        "Both rules keep their IDs and the old numbers are gone from documents and code, with no history note; only tests that model previously stored bookings may still use them",
         "Tests are moved to the new boundaries with @rule tags and pass",
         "The limit values live in one place each in the domain or application",
         "The effect on existing bookings is raised as a question with a recommendation",
         "Integration tests were run against the real database",
-        "A change report in the skill's format was given"
-      ]
+        "A change report in the skill's format was given",
+        "A stored booking longer than the new limit still loads and still blocks its room under BK-02, and a test shows it",
+        "The change and its reason are recorded in the technical spec's Decisions",
+        "The traceability check was run with the ID-stability comparison against the last commit"
+      ],
+      "setup": "uv run evals/setup_fixture.py room-booking-uc01 <project dir>"
     },
     {
       "id": 5,
@@ -86,7 +101,7 @@
       "prompt": "Members want to see their upcoming bookings. Add that to the project.",
       "expected_output": "The change kinds are named, new rules with IDs are added, UC-03 is added without renumbering, documents are updated in order, tests come first, and the report follows the skill's format.",
       "files": [
-        "fixtures/room-booking (after UC-01 is implemented)"
+        "evals/fixtures/room-booking-uc01"
       ],
       "assertions": [
         "The kinds of change (use case, and rules if any) are named before editing",
@@ -94,8 +109,10 @@
         "UC-03 is added and existing use case numbers are unchanged",
         "Domain model, technical spec and functional spec are updated by reference to the rule IDs",
         "New tests carry @rule or @usecase tags and were written before the code",
-        "No behaviour is invented without being recorded as a question or open point"
-      ]
+        "No behaviour is invented without being recorded as a question or open point",
+        "Every test tagged with a rule ID exercises that rule's behaviour, not only a related query or a part of the rule"
+      ],
+      "setup": "uv run evals/setup_fixture.py room-booking-uc01 <project dir>"
     },
     {
       "id": 6,
@@ -103,7 +120,7 @@
       "prompt": "We want to move the persistence adapter from PostgreSQL to MySQL 8.",
       "expected_output": "Change confined to the persistence adapter, the new dependency approved, the PostgreSQL-specific overlap guarantee for BK-02 replaced and tested, a Decisions entry written, migrations handled with the user's confirmation, and verified on a real MySQL 8.",
       "files": [
-        "fixtures/room-booking (after UC-01 is implemented)"
+        "evals/fixtures/room-booking-uc01"
       ],
       "assertions": [
         "Domain and application layers are unchanged",
@@ -111,8 +128,12 @@
         "The BK-02 guarantee that relied on a PostgreSQL constraint is replaced and covered by a concurrency test",
         "A Decisions entry records what, why and what was rejected",
         "The existing migration is not rewritten without asking whether a real environment applied it",
-        "Tests pass against a real MySQL 8 container"
-      ]
+        "Tests pass against a real MySQL 8 container",
+        "The BK-02 guarantee covers every write path, including an update that reactivates a cancelled booking, and a test shows it",
+        "Any claim that MySQL cannot support an approach is backed by a minimal test or documentation cited in the Decisions entry",
+        "The concurrency test makes both transactions check for overlaps before either inserts, so it fails if any one lock is removed"
+      ],
+      "setup": "uv run evals/setup_fixture.py room-booking-uc01 <project dir>"
     }
   ]
 }
