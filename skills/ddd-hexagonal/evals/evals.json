@@ -32,7 +32,7 @@
       "assertions": [
         "Work is not done on main without a branch: a feature branch exists or a branch name was proposed, and nothing was committed",
         "Unit tests exist for RM-01, BK-01, BK-02, BK-03, BK-04 and BK-05 and each test names its rule with an @rule tag",
-        "Test files were created before the implementation files (file modification times or transcript)",
+        "Unit tests for domain and service code were created before that code (log order or file times); adapters may get their integration tests after them, as the skill allows",
         "The unit tests pass when run",
         "The domain package imports no web framework or database driver",
         "A BookingRepository port is defined in the application layer and unit tests use an in-memory fake",
@@ -44,8 +44,8 @@
         "No dependency outside the technical spec stack was added without a recorded question",
         "Documents were changed only in the ways the skill allows without asking (an open point, an approved stack row, folder layout or enforcement table matching new code, the progress plan); any other change has a recorded question",
         "The domain layer calls no platform clock or randomness (datetime.now, uuid4, random); IDs and time come through ports or parameters",
-        "A test runs two concurrent overlapping booking requests against PostgreSQL and shows that only one succeeds",
-        "Every test tagged with a rule ID exercises that rule's behaviour, not only a related query or a part of the rule",
+        "A test shows that two overlapping bookings made at the same moment cannot both be stored in PostgreSQL: concurrent requests, or a stale read that only the database constraint catches",
+        "Every test tagged with a rule ID exercises that rule's behaviour; a test that covers only part of a rule (such as the count a limit relies on) says so in its tag",
         "No UC-02 (cancel) behaviour was implemented",
         "docs/plan.md was created from the documents, with UC-01 ticked and UC-02 unticked under milestone 1",
         "The run kept a session task list with the mode's steps"

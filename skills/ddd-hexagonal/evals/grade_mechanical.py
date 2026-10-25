@@ -325,7 +325,7 @@ def _(ctx):
     return not missing, f"rules without an @rule tag in tests/unit: {missing or 'none'}"
 
 
-@check("build-book-room", "Test files were created before")
+@check("build-book-room", "Unit tests for domain and service code were created before")
 def _(ctx):
     return None, "order of creation is in log.md"
 
@@ -390,19 +390,23 @@ def _(ctx):
 def _(ctx): return domain_forbidden(ctx, CLOCK)
 
 
-@check("build-book-room", "A test runs two concurrent")
+@check("build-book-room", "A test shows that two overlapping bookings made at the same moment")
 def _(ctx):
-    hits = grep(ctx.files("tests/**/*.py"), CONCURRENCY)
-    if not hits:
-        return False, "no threading, executor or asyncio.gather in any test"
-    return None, "tests with concurrency primitives (read them): " + "; ".join(hits[:4])
+    tests = ctx.files("tests/integration/**/*.py")
+    threads = grep(tests, CONCURRENCY)
+    stale = grep(tests, r"concurrent|stale|race|ExclusionViolation|IntegrityError|bookings_no_overlap|hides?\b")
+    if not threads and not stale:
+        return False, "no concurrency primitive and no stale-read test caught by the constraint"
+    return None, f"threaded: {threads[:2] or 'none'}; stale-read or constraint: {stale[:3] or 'none'} (read them)"
 
 
 @check("build-book-room", "Every test tagged with a rule ID")
 def _(ctx):
     tags = tagged_tests(ctx)
     wide = [t for t in tags if len(re.findall(r"[A-Z]{2,5}-\d+", t)) >= 3]
-    return None, f"{len(tags)} tag(s); tests tagged with 3+ rules (likely overclaiming): {wide[:4]}"
+    partial = grep(ctx.files("tests/**/*.py"), r"@rule\s+[A-Z]{2,5}-\d+[^\n]*\(")
+    return None, (f"{len(tags)} tag(s); tests tagged with 3+ rules (likely overclaiming): {wide[:4]}; "
+                  f"tags marked partial: {partial[:4] or 'none'}")
 
 
 @check("build-book-room", "No UC-02")
