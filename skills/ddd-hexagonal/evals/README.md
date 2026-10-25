@@ -8,6 +8,7 @@
 | `fixtures/room-booking-uc01` | Overlay on `room-booking`: UC-01 implemented and tested, as a second commit | `change-booking-limits`, `change-new-use-case`, `change-db-swap` |
 | `fixtures/returns-review` | Documents only, with planted contradictions, gaps and duplication (see the eval's assertions) | `review-returns-docs` |
 | `fixtures/library-legacy` | Working Flask + PostgreSQL app with no documents and no `tools/` or branch guard. Planted: rules only in the schema (one open loan per book, at most 2 renewals), a loan limit of 3 in `loans.py` and 5 in `web.py`, late fees on floats, and a test that already fails (`test_fee_is_capped`) | `adopt-library-loans` |
+| `fixtures/library-legacy-adopted` | Overlay on `library-legacy`: Lending adopted (LN-01..LN-12, UC-01..UC-03, tests on PostgreSQL, import-linter), as a second commit. LN-12 (no second return) is a "code differs from rule" open point with a strict expected-failure test | `fix-double-return` |
 
 Create a project for one run, from this folder's parent (the skill folder):
 

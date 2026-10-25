@@ -1,6 +1,6 @@
 # Change procedures
 
-Read the section for the kind of change you are making. All kinds share the opening and the closing steps; the middle differs.
+A bug, where the documents are right and only the code is wrong, is not a change: follow `references/fix.md`. Read the section for the kind of change you are making. All kinds share the opening and the closing steps; the middle differs.
 
 ## Contents
 

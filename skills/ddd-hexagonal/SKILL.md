@@ -1,6 +1,6 @@
 ---
 name: ddd-hexagonal
-description: Spec-driven development with Domain-Driven Design and hexagonal (ports and adapters) architecture, in any language. Writes a project's documents (business rules with IDs, use cases, domain model, specs) through an interview or from existing code, then drives every task one use case at a time, test first. Use this whenever the user starts an application, service or module that has business rules, or wants an existing or legacy codebase's rules documented or brought under this workflow; adds a feature or use case, changes, adds or removes a rule, renames a concept, or swaps a library or database in a project with these documents; mentions DDD, aggregates, bounded contexts, hexagonal, ports and adapters, clean architecture, business rules, use cases, or "specs before code"; asks to implement a use case in a project with docs/business-rules.md; wants project docs reviewed for contradictions or duplication; or asks for a code review in such a project - even if they never name DDD or hexagonal.
+description: Spec-driven development with Domain-Driven Design and hexagonal (ports and adapters) architecture, in any language. Writes a project's documents (business rules with IDs, use cases, domain model, specs) through an interview or from existing code, then drives every task one use case at a time, test first. Use this whenever the user starts an application, service or module that has business rules, or wants an existing or legacy codebase's rules documented or brought under this workflow; adds a feature or use case, fixes a bug, changes, adds or removes a rule, renames a concept, or swaps a library or database in a project with these documents; mentions DDD, aggregates, bounded contexts, hexagonal, ports and adapters, clean architecture, business rules, use cases, or "specs before code"; asks to implement a use case in a project with docs/business-rules.md; wants project docs reviewed for contradictions or duplication; or asks for a code review in such a project - even if they never name DDD or hexagonal.
 ---
 
 # DDD + hexagonal, driven by documents
@@ -17,10 +17,11 @@ Look at the project first, then choose:
 | Working code but no document set, or `docs/adoption.md` lists areas not adopted yet | **Adopt**: find the rules in the code, have the user confirm them, pin them with tests, one area at a time |
 | The user asks to implement a use case that `use-cases.md` already lists | **Build**: one use case at a time |
 | Something the documents do not hold yet, or hold differently: a new feature or use case, a changed or dropped rule ("it's 4 hours now"), a technology swap, or a rename | **Change**: name the kinds, impact analysis, then documents, tests, code |
+| A bug: the code breaks a rule the documents already hold (a bug report, a failing rule test, an open point where the code is wrong) | **Fix**: confirm the rule covers it, failing test first, smallest change in the rule's home |
 | A use case or milestone is finished, or the user asks for a check | **Review**: documentation and traceability |
 | The user asks to review code, a diff, a branch or a PR in a project with these documents | **Code review**: architecture, traceability, code against the documents |
 
-Build and Change are told apart by `use-cases.md`: a request it already covers is Build; anything it does not cover yet is Change, which updates the documents first and then builds through the Build steps.
+Build and Change are told apart by `use-cases.md`: a request it already covers is Build; anything it does not cover yet is Change, which updates the documents first and then builds through the Build steps. Fix and Change are told apart by the rule: when the documents are right and the code is wrong it is Fix; when the documents must change, or say nothing about the behaviour, it is Change.
 
 Bootstrap and Adopt are told apart by the code: with an application that already runs, its rules are in the code, so Adopt reads them from there instead of asking the user to recall them. If the project has some documents but not the set below, say what is missing and offer to Bootstrap the missing parts only (or Adopt them, when the code holds the answers). In a project that is partly adopted, Build and Change apply to adopted areas only; `references/adopt.md` section 10 says what to do in the others. Detect the language from manifests (`composer.json`, `package.json` or `tsconfig.json`, `pyproject.toml` or `requirements.txt`, `pom.xml` or `build.gradle*`) and read the matching file in `references/` (`php.md`, `typescript.md`, `python.md`, `java-kotlin.md`). For any other language, use the project's `.claude/ddd-hexagonal/<language>.md` if it exists; otherwise read `references/new-language.md` and offer to create it.
 
@@ -120,6 +121,16 @@ Use this when the user asks for a new feature or use case, says a rule, limit or
 3. Apply the procedure for each kind, always editing the single home first and updating the other documents only by ID.
 4. Tests first, then code; run all checks, including the traceability check, which also fails when a rule or use case ID disappears without a "(removed)" or "(superseded by ...)" marker.
 5. End with the change report from `references/change.md` and stop; commit only if asked.
+
+## Fix: the code breaks a documented rule
+
+Follow `references/fix.md`.
+
+1. Branch check, then find the rule the bug breaks. No rule covers the behaviour, or the rule itself is wrong: that is a Change, so say so and stop the fix there.
+2. Reproduce with a failing test that cites the rule; an expected-failure test from Adopt is the reproduction once its marker is removed.
+3. If stored data may be affected, ask how to treat it, with the query that finds it, before editing.
+4. Make the smallest change in the place the enforcement table names; no moving or tidying on the way.
+5. Run all checks, close the open point and update the enforcement line, give the fix report and stop.
 
 ## Review
 

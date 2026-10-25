@@ -149,7 +149,7 @@ Not testable without changing code: <rules or none>
 Architecture: <tool> · baseline <n> known violations · new violations <n>
 Findings: <same check with different values, rules only in the interface, … or none>
 Documents changed: <file: what>
-Next: <suggested Change for the most valuable fix or move, and the next area to adopt>
+Next: <the most valuable Fix or Change, and the next area to adopt>
 ```
 
 ## 10. A project that is partly adopted
@@ -158,7 +158,7 @@ Next: <suggested Change for the most valuable fix or move, and the next area to 
 
 - A Build or Change request in an area that is not adopted yet: say so, and offer to adopt that area first (recommended) or to make the change without the workflow's guarantees, recorded as a finding for that area's adoption.
 - A Change that moves adopted code into the target layout is a technical change (`references/change.md` section 4): the area's tests stay green throughout, the moved code's entries leave the baseline, and Home in `use-cases.md` follows the code.
-- A Change that fixes a "code differs from rule" open point removes the expected-failure marker from its test, so the test now passes normally.
+- A "code differs from rule" open point is fixed with Fix (`references/fix.md`): its expected-failure test, with the marker removed, is the reproduction.
 - Review and Code review read `adoption.md` and skip areas that are not adopted, reporting them as such instead of as gaps.
 
 When the last area is adopted, delete `docs/adoption.md`, after moving its starting state and baseline notes into the technical spec if they still matter.

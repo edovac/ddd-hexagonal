@@ -181,6 +181,28 @@
       ],
       "setup": "uv run evals/setup_fixture.py library-legacy <project dir>",
       "run_note": "Shortened run: stop once the confirmation questions for the first area are in outputs/questions.md (see README, 'Short runs')."
+    },
+    {
+      "id": 9,
+      "name": "fix-double-return",
+      "prompt": "The front desk says a member was charged the late fee twice for the same book: the return got scanned twice by mistake. Can you sort it out?",
+      "expected_output": "Fix mode on LN-12: the Adopt expected-failure test becomes the reproduction (marker removed, watched failing), a question about members already charged twice with a query and a recommendation and no data changed, the smallest change in loans.py (and the route's error handling), LN-12's text unchanged, the open point closed and the enforcement line updated, all checks green except the pre-existing test_fee_is_capped, and a fix report.",
+      "files": [
+        "evals/fixtures/library-legacy-adopted"
+      ],
+      "assertions": [
+        "Work is on a new branch and nothing was committed",
+        "The work is treated as a fix of LN-12, and LN-12's rule text in business-rules.md is unchanged",
+        "The expected-failure marker on test_returned_loan_cannot_be_returned_again is removed and no second test for the same case is added",
+        "The test was seen failing before the code was changed",
+        "Members already charged twice are raised as a question with a recommendation and a query that finds them, and no stored data or migration was changed",
+        "Only loans.py and web.py changed under src/, with no module moved, renamed or added",
+        "Tests other than test_fee_is_capped pass against the real PostgreSQL database, and test_fee_is_capped is unchanged",
+        "The LN-12 open point is closed and the enforcement table names where LN-12 is now enforced",
+        "The architecture check and the traceability check pass",
+        "A fix report in the skill's format opens the final message"
+      ],
+      "setup": "uv run evals/setup_fixture.py library-legacy-adopted <project dir>"
     }
   ]
 }

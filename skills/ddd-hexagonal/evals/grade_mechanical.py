@@ -36,7 +36,8 @@ from pathlib import Path
 EVALS = Path(__file__).resolve().parent
 COMMITS_AT_START = {"bootstrap-invoicing": 0, "build-book-room": 1, "review-returns-docs": 1,
                     "change-booking-limits": 2, "change-new-use-case": 2, "change-db-swap": 2,
-                    "adopt-library-loans": 1, "adopt-confirmation": 1}
+                    "adopt-library-loans": 1, "adopt-confirmation": 1,
+                    "fix-double-return": 2}
 SKIP_DIRS = {".venv", "__pycache__", ".git", "node_modules", ".mypy_cache", ".ruff_cache", ".pytest_cache"}
 WEB = r"fastapi|flask|django|starlette|aiohttp|uvicorn|tornado|bottle|sanic|APIRouter|@app\.(get|post|put|delete)"
 DRIVERS = r"psycopg|pymysql|mysql|sqlalchemy|asyncpg|sqlite3|django|flask|fastapi|requests|httpx|boto3"
@@ -694,6 +695,7 @@ def _(ctx):
 
 
 @check("adopt-library-loans", "Work is on a new branch")
+@check("fix-double-return", "Work is on a new branch")
 def _(ctx): return branch_and_commits(ctx)
 
 
@@ -776,6 +778,7 @@ def _(ctx):
 
 
 @check("adopt-library-loans", "Tests other than test_fee_is_capped pass")
+@check("fix-double-return", "Tests other than test_fee_is_capped pass")
 def _(ctx):
     res = full_suite(ctx)
     if res is None:
@@ -869,6 +872,77 @@ def _(ctx):
 
 @check("adopt-library-loans", "An adoption report in the skill's format opens")
 def _(ctx): return None, "report content"
+
+
+# ---- fix-double-return ------------------------------------------------------------------------------------
+
+def rule_row(text: str, rid: str) -> str:
+    m = re.search(rf"^\|\s*{rid}\s*\|.*$", text, re.M)
+    return m.group(0) if m else ""
+
+
+@check("fix-double-return", "The work is treated as a fix of LN-12")
+def _(ctx):
+    same = rule_row(ctx.head_text("docs/business-rules.md") or "", "LN-12") == rule_row(ctx.read("docs/business-rules.md"), "LN-12")
+    return (None if same else False), f"LN-12 row unchanged={same}; read the report for the Fix/Change decision"
+
+
+@check("fix-double-return", "The expected-failure marker")
+def _(ctx):
+    text = ctx.read("tests/integration/test_lending.py")
+    m = re.search(r"((?:^@.*\n|^    .*\n|^\)\n)*)def test_returned_loan_cannot_be_returned_again", text, re.M)
+    if not m:
+        return False, "test_returned_loan_cannot_be_returned_again is gone"
+    marked = "xfail" in m.group(1)
+    tests = re.findall(r"def (test_\w+)\([^)]*\):\n\s+\"\"\"[^\n]*LN-12", ctx.read("tests/integration/test_lending.py"))
+    others = [h for h in grep(ctx.files("tests/**/*.py"), r"LN-12") if not h.startswith("test_lending.py")]
+    if marked:
+        return False, "xfail still on test_returned_loan_cannot_be_returned_again"
+    return None, f"marker removed; tests citing LN-12: {tests}; elsewhere: {others or 'none'} (judge whether any repeats the same case)"
+
+
+@check("fix-double-return", "The test was seen failing")
+def _(ctx): return None, "order in log.md"
+
+
+@check("fix-double-return", "Members already charged twice")
+def _(ctx):
+    rc, out = ctx.git("status", "--porcelain", "--untracked-files=all", "--", "migrations")
+    if out.strip():
+        return False, f"migrations changed: {out}"
+    q = ctx.output_text("questions.md")
+    return None, f"migrations unchanged; questions.md has SELECT={bool(re.search(r'SELECT', q, re.I))}"
+
+
+@check("fix-double-return", "Only loans.py and web.py changed")
+def _(ctx):
+    rc, changed = ctx.git("diff", "--name-only", "HEAD", "--", "src")
+    rc2, added = ctx.git("ls-files", "--others", "--exclude-standard", "--", "src")
+    files = [f for f in (changed + "\n" + added).splitlines() if f.strip()]
+    other = [f for f in files if f not in ("src/library/loans.py", "src/library/web.py")]
+    return not other and bool(files), f"changed under src: {files or 'none'}"
+
+
+@check("fix-double-return", "The LN-12 open point is closed")
+def _(ctx):
+    spec = ctx.read("docs/functional-spec.md")
+    line = next((l for l in spec.splitlines() if "LN-12" in l and re.search(r"code differs|open point", l, re.I)), "")
+    open_still = line.strip().startswith("- [ ]")
+    enf = rule_row(ctx.read("docs/technical-spec.md"), "LN-12")
+    return (None if not open_still else False), f"open point line: {line.strip()[:90] or 'gone'}; enforcement: {enf[:120]}"
+
+
+@check("fix-double-return", "The architecture check and the traceability check pass")
+def _(ctx):
+    rc, out = ctx.tool("lint-imports", ["uv", "run", "lint-imports"])
+    ok, ev = traceability(ctx)
+    return rc == 0 and ok, f"lint-imports exit {rc}; traceability {ev}"
+
+
+@check("fix-double-return", "A fix report")
+def _(ctx):
+    rep = ctx.output_text("report.md").lstrip("`\n ")
+    return (True if rep.startswith("Fix:") else None), f"report starts with: {rep[:60]!r}"
 
 
 # ---- driver ------------------------------------------------------------------------------------------------
