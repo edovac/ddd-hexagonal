@@ -154,7 +154,7 @@
         "The two rules that exist only in the schema, one open loan per book and at most 2 renewals, are recorded as loan rules",
         "The conflicting loan limits (3 in loans.py, 5 in web.py) are raised as a finding or a question, not resolved silently",
         "Late fees computed on floats are reported as a finding",
-        "Each loan rule names where it is enforced today, as file:line evidence in adoption.md or in the technical spec's enforcement table",
+        "Each loan rule names where it is enforced today: path::symbol in the technical spec's enforcement table (file:line evidence is for the candidate tables only)",
         "Existing tests that cover a rule are tagged with its rule ID rather than duplicated",
         "Every loan rule has a test citing its ID or is listed as not testable without changing code, and the traceability check reports no undefined IDs",
         "Tests other than test_fee_is_capped pass, including new tests against the real PostgreSQL database (expected failures allowed)",
@@ -204,7 +204,7 @@
         "Document lines the fix added or changed cite the code it changed by path::symbol, with no line numbers, and the LN-12 enforcement row names the function",
         "The architecture check and the traceability check pass",
         "A fix report in the skill's format opens the final message",
-        "In docs/plan.md the LN-12 fix is ticked with a date, \"Now\" is clear, and the report's follow-ups are added",
+        "In docs/plan.md the LN-12 fix is ticked with a date, \"Now\" is clear, and every follow-up the report says it added is in the plan",
         "The run kept a session task list with the mode's steps"
       ],
       "setup": "uv run evals/setup_fixture.py library-legacy-adopted <project dir>"

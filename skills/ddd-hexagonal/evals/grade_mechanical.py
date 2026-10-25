@@ -235,7 +235,12 @@ def _(ctx):
 def _(ctx):
     code = []
     for f in ctx.files("src/**/*", "app/**/*", "lib/**/*"):
-        if f.suffix in (".py", ".ts", ".js", ".php", ".java", ".kt", ".go") and f.read_text(errors="replace").strip():
+        if f.suffix not in (".py", ".ts", ".js", ".php", ".java", ".kt", ".go"):
+            continue
+        # A placeholder may hold a docstring or comments that point to the documents; anything else is code.
+        body = re.sub(r'^\s*("""|\'\'\')(.*?)\1', "", f.read_text(errors="replace"), flags=re.S)
+        body = "\n".join(l for l in body.splitlines() if l.strip() and not re.match(r"\s*(#|//)", l))
+        if body.strip():
             code.append(str(f.relative_to(ctx.project)))
     return not code, f"{len(code)} non-empty source file(s)" + (": " + ", ".join(code[:5]) if code else "")
 
@@ -438,7 +443,8 @@ def _(ctx):
     rules = ctx.read("docs/business-rules.md")
     ids = {i: bool(re.search(rf"^\|\s*{i}\s*\|", rules, re.M)) for i in ("BK-01", "BK-04")}
     marked = bool(re.search(r"^\|\s*BK-0[14]\s*\|[^\n]*\((removed|superseded)", rules, re.M))
-    hits = grep([p for p in ctx.files("docs/*.md", "src/**/*.py") if p.name != "technical-spec.md"], OLD_VALUES)
+    # plan.md dates its ticked items on purpose: it is the history of progress, not of the rules.
+    hits = grep([p for p in ctx.files("docs/*.md", "src/**/*.py") if p.name not in ("technical-spec.md", "plan.md")], OLD_VALUES)
     # The Decisions section is where the reason for the change belongs, so it may name the old value.
     spec = re.sub(r"^##\s*Decisions.*?(?=^##\s|\Z)", "", ctx.read("docs/technical-spec.md"), flags=re.M | re.S)
     hits += [f"technical-spec.md: {m.group(0).strip()[:80]}" for m in re.finditer(r"[^\n]*(?:" + OLD_VALUES + r")[^\n]*", spec, re.I)]
@@ -654,6 +660,33 @@ def _(ctx):
     return None, f"{len(locks)} lock statement(s): " + "; ".join(locks[:6]) + "; check by removing one lock in a copy"
 
 
+def mysql_script(sql: str) -> str:
+    """Wrap each statement in DELIMITER $$ so the mysql client keeps trigger and procedure bodies whole.
+
+    The project applies its migrations through a driver, which takes one statement at a time; the
+    client splits on every ';', including the ones inside BEGIN ... END."""
+    sql = re.sub(r"--[^\n]*", "", sql)
+    if re.search(r"^\s*DELIMITER\s", sql, re.I | re.M) or not re.search(r"\bBEGIN\b", sql, re.I):
+        return sql
+    statements, current, depth = [], [], 0
+    for token in re.split(r"(;|\bBEGIN\b|\bEND\b(?!\s+(?:IF|WHILE|LOOP|CASE|REPEAT)\b))", sql, flags=re.I):
+        word = token.upper()
+        if word == "BEGIN":
+            depth += 1
+        elif word == "END":
+            depth = max(depth - 1, 0)
+        if token == ";" and depth == 0:
+            stmt = "".join(current).strip()
+            if stmt:
+                statements.append(stmt)
+            current = []
+        else:
+            current.append(token)
+    if "".join(current).strip():
+        statements.append("".join(current).strip())
+    return "DELIMITER $$\n" + "\n".join(s + " $$" for s in statements) + "\nDELIMITER ;\n"
+
+
 def mysql_write_paths(ctx: Ctx):
     if not ctx.mysql_container:
         return None, "not run: pass --mysql-container NAME"
@@ -664,7 +697,7 @@ def mysql_write_paths(ctx: Ctx):
     try:
         run(f"CREATE DATABASE {db}")
         for m in sorted((ctx.project / "migrations").glob("*.sql")):
-            rc, out = run(m.read_text(), db)
+            rc, out = run(mysql_script(m.read_text()), db)
             if rc != 0:
                 return None, f"migration {m.name} did not apply on MySQL: {out[:100]}"
         room = "7c0d3a52-0b1e-4c55-9a52-0000000000aa"
@@ -767,8 +800,10 @@ def _(ctx):
 
 @check("adopt-library-loans", "Each loan rule names where it is enforced")
 def _(ctx):
-    refs = grep(ctx.files("docs/*.md"), r"\b[\w/]+\.(py|sql):\d+")
-    return None, f"{len(refs)} file:line reference(s) in docs, e.g. {refs[:3]}"
+    rows = [r for r in ctx.read("docs/technical-spec.md").splitlines() if re.match(r"^\|\s*LN-\d+", r)]
+    symbols = [r for r in rows if "::" in r]
+    lines = [r[:60] for r in rows if re.search(r"\.(py|sql):\d+", r)]
+    return None, f"{len(rows)} LN rows in the enforcement table; with path::symbol: {len(symbols)}; with line numbers: {lines[:3] or 'none'}"
 
 
 @check("adopt-library-loans", "Existing tests that cover a rule")

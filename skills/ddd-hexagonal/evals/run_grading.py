@@ -71,6 +71,8 @@ def main() -> int:
         elif eval_name in MYSQL and a.mysql_url:
             cmd += ["--env", f"DATABASE_URL={a.mysql_url.format(db=db + '_test')}"]
             if a.mysql_container:
+                subprocess.run(["docker", "exec", a.mysql_container, "mysql", "-uroot", f"-p{a.mysql_password}",
+                                "-e", f"CREATE DATABASE IF NOT EXISTS {db}_test"], capture_output=True)
                 cmd += ["--mysql-container", a.mysql_container, "--mysql-password", a.mysql_password]
         elif eval_name in POSTGRES | MYSQL:
             note = " (no database URL given: integration tests and probes not run)"
